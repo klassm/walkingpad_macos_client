@@ -1,0 +1,500 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5B15903D2641BEEC0039C334 /* HttpApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B15903C2641BEEC0039C334 /* HttpApi.swift */; };
+		5B2C72D9263468B800CE4F88 /* walkingpad_clientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2C72D8263468B800CE4F88 /* walkingpad_clientApp.swift */; };
+		5B2C72DB263468B800CE4F88 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2C72DA263468B800CE4F88 /* ContentView.swift */; };
+		5B2C72DD263468B900CE4F88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B2C72DC263468B900CE4F88 /* Assets.xcassets */; };
+		5B2C72E0263468B900CE4F88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B2C72DF263468B900CE4F88 /* Preview Assets.xcassets */; };
+		5B2C72ED263469DD00CE4F88 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2C72EC263469DD00CE4F88 /* DeviceView.swift */; };
+		5B43D84E267F761700A16916 /* RepeatingTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B43D84D267F761700A16916 /* RepeatingTimer.swift */; };
+		5B47EB182647CFAA00302145 /* GoogleOAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB172647CFAA00302145 /* GoogleOAuth.swift */; };
+		5B47EB1A2647D73A00302145 /* OAuth2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B47EB192647D73900302145 /* OAuth2.framework */; };
+		5B47EB1B2647D73A00302145 /* OAuth2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5B47EB192647D73900302145 /* OAuth2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5B47EB1F2648015500302145 /* LoginLogoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB1E2648015500302145 /* LoginLogoutButton.swift */; };
+		5B47EB212648032800302145 /* GoogleFitFacade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB202648032800302145 /* GoogleFitFacade.swift */; };
+		5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */; };
+		5B766D0A26430E1800FFC606 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; };
+		5B766D0B26430E1800FFC606 /* Embassy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5B8ACDF8263B28D1003BE2F2 /* DFT200.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */; };
+		5B9E0E4B263560CE0087ECC0 /* BLEConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9E0E4A263560CE0087ECC0 /* BLEConnection.swift */; };
+		5BA17245263EA5810010E483 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17244263EA5810010E483 /* EmptyView.swift */; };
+		5BA17247263EBAC80010E483 /* FooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17246263EBAC80010E483 /* FooterView.swift */; };
+		5BA17249263EBBDC0010E483 /* WaitingForTreadmillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17248263EBBDC0010E483 /* WaitingForTreadmillView.swift */; };
+		5BA1724D263EC1680010E483 /* DeviceState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA1724C263EC1680010E483 /* DeviceState.swift */; };
+		5BA1724F263ECF720010E483 /* RunningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA1724E263ECF720010E483 /* RunningView.swift */; };
+		5BA17251263ED5670010E483 /* StoppedOrPauseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17250263ED5670010E483 /* StoppedOrPauseView.swift */; };
+		5BA17253263EDB0F0010E483 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17252263EDB0F0010E483 /* Workout.swift */; };
+		5BA17256263EEF5A0010E483 /* FileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17255263EEF5A0010E483 /* FileSystem.swift */; };
+		5BA17259263EF74F0010E483 /* DateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17258263EF74F0010E483 /* DateExtension.swift */; };
+		5BA4E9F72649A2E00056CA99 /* StepsUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4E9F62649A2E00056CA99 /* StepsUploader.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5B766D0C26430E1800FFC606 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5B766D0B26430E1800FFC606 /* Embassy.framework in Embed Frameworks */,
+				5B47EB1B2647D73A00302145 /* OAuth2.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5B1590382641BD350039C334 /* Swifter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Swifter.xcframework; path = Carthage/Build/Swifter.xcframework; sourceTree = "<group>"; };
+		5B15903C2641BEEC0039C334 /* HttpApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpApi.swift; sourceTree = "<group>"; };
+		5B15903E2641C4870039C334 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		5B2C72D5263468B800CE4F88 /* Deskfit Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Deskfit Client.app"; path = "Walkingpad Client.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B2C72D8263468B800CE4F88 /* walkingpad_clientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = walkingpad_clientApp.swift; sourceTree = "<group>"; };
+		5B2C72DA263468B800CE4F88 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5B2C72DC263468B900CE4F88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5B2C72DF263468B900CE4F88 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		5B2C72E1263468B900CE4F88 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5B2C72E2263468B900CE4F88 /* walkingpad_client.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = walkingpad_client.entitlements; sourceTree = "<group>"; };
+		5B2C72EC263469DD00CE4F88 /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
+		5B43D84D267F761700A16916 /* RepeatingTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatingTimer.swift; sourceTree = "<group>"; };
+		5B47EB172647CFAA00302145 /* GoogleOAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleOAuth.swift; sourceTree = "<group>"; };
+		5B47EB192647D73900302145 /* OAuth2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OAuth2.framework; path = Carthage/Build/Mac/OAuth2.framework; sourceTree = "<group>"; };
+		5B47EB1E2648015500302145 /* LoginLogoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginLogoutButton.swift; sourceTree = "<group>"; };
+		5B47EB202648032800302145 /* GoogleFitFacade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleFitFacade.swift; sourceTree = "<group>"; };
+		5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStateView.swift; sourceTree = "<group>"; };
+		5B766D0926430E1800FFC606 /* Embassy.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Embassy.framework; path = Carthage/Build/Mac/Embassy.framework; sourceTree = "<group>"; };
+		5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFT200.swift; sourceTree = "<group>"; };
+		5B9E0E4A263560CE0087ECC0 /* BLEConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEConnection.swift; sourceTree = "<group>"; };
+		5BA17244263EA5810010E483 /* EmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyView.swift; sourceTree = "<group>"; };
+		5BA17246263EBAC80010E483 /* FooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterView.swift; sourceTree = "<group>"; };
+		5BA17248263EBBDC0010E483 /* WaitingForTreadmillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForTreadmillView.swift; sourceTree = "<group>"; };
+		5BA1724C263EC1680010E483 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
+		5BA1724E263ECF720010E483 /* RunningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningView.swift; sourceTree = "<group>"; };
+		5BA17250263ED5670010E483 /* StoppedOrPauseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoppedOrPauseView.swift; sourceTree = "<group>"; };
+		5BA17252263EDB0F0010E483 /* Workout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout.swift; sourceTree = "<group>"; };
+		5BA17255263EEF5A0010E483 /* FileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSystem.swift; sourceTree = "<group>"; };
+		5BA17258263EF74F0010E483 /* DateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtension.swift; sourceTree = "<group>"; };
+		5BA4E9F62649A2E00056CA99 /* StepsUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsUploader.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5B2C72D2263468B800CE4F88 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B766D0A26430E1800FFC606 /* Embassy.framework in Frameworks */,
+				5B47EB1A2647D73A00302145 /* OAuth2.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5B1590372641BD350039C334 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5B47EB192647D73900302145 /* OAuth2.framework */,
+				5B766D0926430E1800FFC606 /* Embassy.framework */,
+				5B15903E2641C4870039C334 /* CocoaAsyncSocket.framework */,
+				5B1590382641BD350039C334 /* Swifter.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5B2C72CC263468B800CE4F88 = {
+			isa = PBXGroup;
+			children = (
+				5B2C72D7263468B800CE4F88 /* walkingpad-client */,
+				5B2C72D6263468B800CE4F88 /* Products */,
+				5B1590372641BD350039C334 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		5B2C72D6263468B800CE4F88 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5B2C72D5263468B800CE4F88 /* Deskfit Client.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5B2C72D7263468B800CE4F88 /* walkingpad-client */ = {
+			isa = PBXGroup;
+			children = (
+				5BA17257263EF7460010E483 /* utils */,
+				5BA17254263EEF4C0010E483 /* services */,
+				5B2C72F826346C3100CE4F88 /* views */,
+				5B2C72F026346A8200CE4F88 /* models */,
+				5B2C72D8263468B800CE4F88 /* walkingpad_clientApp.swift */,
+				5B2C72DC263468B900CE4F88 /* Assets.xcassets */,
+				5B2C72E1263468B900CE4F88 /* Info.plist */,
+				5B2C72E2263468B900CE4F88 /* walkingpad_client.entitlements */,
+				5B2C72DE263468B900CE4F88 /* Preview Content */,
+			);
+			path = "walkingpad-client";
+			sourceTree = "<group>";
+		};
+		5B2C72DE263468B900CE4F88 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				5B2C72DF263468B900CE4F88 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		5B2C72F026346A8200CE4F88 /* models */ = {
+			isa = PBXGroup;
+			children = (
+				5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */,
+				5BA1724C263EC1680010E483 /* DeviceState.swift */,
+				5BA17252263EDB0F0010E483 /* Workout.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
+		5B2C72F826346C3100CE4F88 /* views */ = {
+			isa = PBXGroup;
+			children = (
+				5B2C72EC263469DD00CE4F88 /* DeviceView.swift */,
+				5B2C72DA263468B800CE4F88 /* ContentView.swift */,
+				5BA17244263EA5810010E483 /* EmptyView.swift */,
+				5BA17246263EBAC80010E483 /* FooterView.swift */,
+				5BA17248263EBBDC0010E483 /* WaitingForTreadmillView.swift */,
+				5BA1724E263ECF720010E483 /* RunningView.swift */,
+				5BA17250263ED5670010E483 /* StoppedOrPauseView.swift */,
+				5B47EB1E2648015500302145 /* LoginLogoutButton.swift */,
+				5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */,
+			);
+			path = views;
+			sourceTree = "<group>";
+		};
+		5BA17254263EEF4C0010E483 /* services */ = {
+			isa = PBXGroup;
+			children = (
+				5B9E0E4A263560CE0087ECC0 /* BLEConnection.swift */,
+				5BA17255263EEF5A0010E483 /* FileSystem.swift */,
+				5B15903C2641BEEC0039C334 /* HttpApi.swift */,
+				5B47EB172647CFAA00302145 /* GoogleOAuth.swift */,
+				5B47EB202648032800302145 /* GoogleFitFacade.swift */,
+				5BA4E9F62649A2E00056CA99 /* StepsUploader.swift */,
+				5B43D84D267F761700A16916 /* RepeatingTimer.swift */,
+			);
+			path = services;
+			sourceTree = "<group>";
+		};
+		5BA17257263EF7460010E483 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				5BA17258263EF74F0010E483 /* DateExtension.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5B2C72D4263468B800CE4F88 /* walkingpad-client */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5B2C72E5263468B900CE4F88 /* Build configuration list for PBXNativeTarget "walkingpad-client" */;
+			buildPhases = (
+				5B2C72D1263468B800CE4F88 /* Sources */,
+				5B2C72D2263468B800CE4F88 /* Frameworks */,
+				5B2C72D3263468B800CE4F88 /* Resources */,
+				5B766D0C26430E1800FFC606 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "walkingpad-client";
+			productName = "walkingpad-client";
+			productReference = 5B2C72D5263468B800CE4F88 /* Deskfit Client.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5B2C72CD263468B800CE4F88 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 1250;
+				TargetAttributes = {
+					5B2C72D4263468B800CE4F88 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+				};
+			};
+			buildConfigurationList = 5B2C72D0263468B800CE4F88 /* Build configuration list for PBXProject "walkingpad-client" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5B2C72CC263468B800CE4F88;
+			productRefGroup = 5B2C72D6263468B800CE4F88 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5B2C72D4263468B800CE4F88 /* walkingpad-client */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5B2C72D3263468B800CE4F88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B2C72E0263468B900CE4F88 /* Preview Assets.xcassets in Resources */,
+				5B2C72DD263468B900CE4F88 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5B2C72D1263468B800CE4F88 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B2C72DB263468B800CE4F88 /* ContentView.swift in Sources */,
+				5BA17256263EEF5A0010E483 /* FileSystem.swift in Sources */,
+				5B2C72ED263469DD00CE4F88 /* DeviceView.swift in Sources */,
+				5BA17249263EBBDC0010E483 /* WaitingForTreadmillView.swift in Sources */,
+				5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */,
+				5BA1724D263EC1680010E483 /* DeviceState.swift in Sources */,
+				5B9E0E4B263560CE0087ECC0 /* BLEConnection.swift in Sources */,
+				5B2C72D9263468B800CE4F88 /* walkingpad_clientApp.swift in Sources */,
+				5BA17247263EBAC80010E483 /* FooterView.swift in Sources */,
+				5BA4E9F72649A2E00056CA99 /* StepsUploader.swift in Sources */,
+				5B47EB212648032800302145 /* GoogleFitFacade.swift in Sources */,
+				5BA17259263EF74F0010E483 /* DateExtension.swift in Sources */,
+				5B47EB1F2648015500302145 /* LoginLogoutButton.swift in Sources */,
+				5BA17245263EA5810010E483 /* EmptyView.swift in Sources */,
+				5B47EB182647CFAA00302145 /* GoogleOAuth.swift in Sources */,
+				5BA17253263EDB0F0010E483 /* Workout.swift in Sources */,
+				5BA17251263ED5670010E483 /* StoppedOrPauseView.swift in Sources */,
+				5B8ACDF8263B28D1003BE2F2 /* DFT200.swift in Sources */,
+				5BA1724F263ECF720010E483 /* RunningView.swift in Sources */,
+				5B43D84E267F761700A16916 /* RepeatingTimer.swift in Sources */,
+				5B15903D2641BEEC0039C334 /* HttpApi.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5B2C72E3263468B900CE4F88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ProjectName/PathToFolder/walkingpad_client.entitlements";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5B2C72E4263468B900CE4F88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ProjectName/PathToFolder/walkingpad_client.entitlements";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		5B2C72E6263468B900CE4F88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "walkingpad-client/walkingpad_client.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"walkingpad-client/Preview Content\"";
+				DEVELOPMENT_TEAM = 6C52QR5849;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				INFOPLIST_FILE = "walkingpad-client/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 2.0;
+				NEW_SETTING = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
+				PRODUCT_NAME = "Walkingpad Client";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5B2C72E7263468B900CE4F88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "walkingpad-client/walkingpad_client.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"walkingpad-client/Preview Content\"";
+				DEVELOPMENT_TEAM = 6C52QR5849;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
+				INFOPLIST_FILE = "walkingpad-client/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 2.0;
+				NEW_SETTING = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
+				PRODUCT_NAME = "Walkingpad Client";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5B2C72D0263468B800CE4F88 /* Build configuration list for PBXProject "walkingpad-client" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B2C72E3263468B900CE4F88 /* Debug */,
+				5B2C72E4263468B900CE4F88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5B2C72E5263468B900CE4F88 /* Build configuration list for PBXNativeTarget "walkingpad-client" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B2C72E6263468B900CE4F88 /* Debug */,
+				5B2C72E7263468B900CE4F88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5B2C72CD263468B800CE4F88 /* Project object */;
+}

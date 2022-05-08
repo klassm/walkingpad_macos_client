@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "trayIcon2.svg",
+      "idiom" : "mac"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

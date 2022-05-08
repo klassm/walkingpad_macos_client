@@ -1,0 +1,2 @@
+github "envoy/Embassy" ~> 4.1
+github "p2/OAuth2" ~> 4.2

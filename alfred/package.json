@@ -1,0 +1,10 @@
+{
+  "name": "alfred-deskfit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "alfredPackage": "rm -f zip alfred-deskfit-client.alfredworkflow && zip alfred-deskfit-client.alfredworkflow ./* -x@alfred_package.ignore",
+    "alfredLink": "rm -f ~/Library/Application\\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.alfred-deskfit-client && ln -s ${PWD} ~/Library/Application\\ Support/Alfred/Alfred.alfredpreferences/workflows/user.workflow.alfred-deskfit-client"
+  }
+}
