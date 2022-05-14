@@ -22,7 +22,6 @@ public struct Change {
     var newSpeed: Int
 }
 
-
 public typealias OnChangeCallback = (_ change: Change) -> Void
 
 class Workout: ObservableObject {
@@ -57,6 +56,7 @@ class Workout: ObservableObject {
 
         let stepDiff = newState.steps - (oldState?.steps ?? 0)
         let distanceDiff = newState.distance - (oldState?.distance ?? 0)
+        let walkingTimeDiff = newState.walkingTimeSeconds - ( oldState?.walkingTimeSeconds ?? 0)
         
         if (self.steps > 0 && oldState == nil) {
             return
@@ -65,7 +65,7 @@ class Workout: ObservableObject {
         
         print("adding steps=\(stepDiff) distance=\(distanceDiff)")
         
-        if (steps > 0 && newState.statusType != .lastStatus) {
+        if (steps > 0 && newState.statusType == .currentStatus) {
             let change = Change(
                 oldTime: self.lastUpdateTime,
                 newTime: newState.time,
@@ -78,7 +78,7 @@ class Workout: ObservableObject {
         
         self.steps = self.steps + stepDiff
         self.distance = self.distance + distanceDiff
-        self.walkingSeconds = newState.walkingTimeSeconds
+        self.walkingSeconds = walkingTimeDiff
         self.lastUpdateTime = newState.time
         
         if (oldState != nil && oldState?.speed != newState.speed) {
