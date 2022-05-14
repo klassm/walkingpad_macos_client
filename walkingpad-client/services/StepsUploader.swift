@@ -5,46 +5,32 @@ class StepsUploader {
     private var googleFitFacade: GoogleFitFacade
     
     private var accumulatedSteps: Int = 0
-    private var intervalStartTime: Date? = nil
-    private var workoutStartTime: Date? = nil
+    private var startTime: Date? = nil
     
     init(googleFitFacade: GoogleFitFacade) {
         self.googleFitFacade = googleFitFacade
     }
     
     func handleChange(_ change: Change) {
-        let hasSpeedChange = change.newSpeedLevel != change.oldSpeedLevel
-        accumulatedSteps += change.steps
+        let hasSpeedChange = change.newSpeed != change.oldSpeed
+        accumulatedSteps += change.stepsDiff
 
-        if (intervalStartTime == nil) {
-            intervalStartTime = Date()
-        }
-        if (workoutStartTime == nil) {
-            workoutStartTime = intervalStartTime
+        if (self.startTime == nil) {
+            self.startTime = Date()
         }
         
-        if (!hasSpeedChange) {
+        if (!hasSpeedChange || accumulatedSteps < 150 || change.oldSpeed == 0 || change.newSpeed != 0) {
             return
         }
-        
+
+        guard let startTime = self.startTime else { return }
         let now = Date()
-        self.submitIfRequired(start: intervalStartTime!, end: now, steps: accumulatedSteps)
         
-        if (change.newSpeedLevel < 10) {
-            self.googleFitFacade.createWorkoutSession(start: workoutStartTime!, end: now)
-            workoutStartTime = nil
-        }
+        print("uploading \(startTime)-\(now) => \(self.accumulatedSteps)")
+        self.googleFitFacade.uploadStepData(start: startTime, end: now, steps: self.accumulatedSteps)
+        self.googleFitFacade.createWorkoutSession(start: startTime, end: now)
         
-        intervalStartTime = now
-        accumulatedSteps = 0
-    }
-    
-    private func submitIfRequired(start: Date, end: Date, steps: Int) {
-        if (steps == 0) {
-            return
-        }
-        
-        print("uploading \(start)-\(end) => \(steps)")
-        self.googleFitFacade.uploadStepData(start: start, end: end, steps: steps)
+        self.startTime = nil
+        self.accumulatedSteps = 0
     }
 }

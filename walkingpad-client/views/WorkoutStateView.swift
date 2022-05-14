@@ -1,17 +1,25 @@
 import SwiftUI
 import CoreBluetooth
 
-func distanceTextFor(_ meters: Double) -> String {
+func distanceTextFor(_ meters: Int) -> String {
     if (meters < 10000) {
-        let rounded = Int(meters.rounded())
-        return "\(rounded) m"
+        return "\(meters) m"
     }
-    return String(format: "%.00f km", meters / 1000.0)
+    return String(format: "%.00f km", Double(meters) / 1000)
 }
 
 
-func stepsTextFor(_ steps: Double) -> String {
-    return String(Int(steps.rounded()))
+func stepsTextFor(_ steps: Int) -> String {
+    return String(steps)
+}
+
+func printTime(_ seconds: Int) -> String {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.unitsStyle = .positional
+
+    return formatter.string(from: TimeInterval(seconds)) ?? ""
+    
 }
 
 
@@ -22,12 +30,10 @@ struct WorkoutStateView: View {
     var workout: Workout
 
     var body: some View {
-        let steps = workout.steps
-        let meters = workout.distanceMeters
-    
         VStack {
-            Text("\(stepsTextFor(steps)) Steps")
-            Text("\(distanceTextFor(meters))")
+            Text(printTime(workout.walkingSeconds))
+            Text("\(workout.steps) Steps")
+            Text("\(distanceTextFor(workout.distance))")
         }
     }
 }

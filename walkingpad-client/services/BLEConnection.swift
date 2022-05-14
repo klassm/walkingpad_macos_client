@@ -7,7 +7,11 @@ open class BLEConnection: NSObject, CBCentralManagerDelegate, ObservableObject {
 
     private var centralManager: CBCentralManager! = nil
 
-    public static let bleServiceUUID = CBUUID.init(string: "fff0")
+    public static let bleServiceUUIDs = [
+        CBUUID.init(string: "0000180a-0000-1000-8000-00805f9b34fb"),
+        CBUUID.init(string: "00010203-0405-0607-0809-0a0b0c0d1912"),
+        CBUUID.init(string: "0000fe00-0000-1000-8000-00805f9b34fb")
+    ]
 
     @Published
     var device: WalkingPad? = nil
@@ -30,8 +34,8 @@ open class BLEConnection: NSObject, CBCentralManagerDelegate, ObservableObject {
     // Handles BT Turning On/Off
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if (central.state == .poweredOn) {
-            print("Scanning for devices", BLEConnection.bleServiceUUID);
-            self.centralManager.scanForPeripherals(withServices: [BLEConnection.bleServiceUUID], options: nil)
+            print("Scanning for devices");
+            self.centralManager.scanForPeripherals(withServices: BLEConnection.bleServiceUUIDs, options: nil)
         } else {
             self.centralManager.stopScan()
         }
@@ -39,17 +43,16 @@ open class BLEConnection: NSObject, CBCentralManagerDelegate, ObservableObject {
 
     // Handles the result of the scan
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        print("Peripheral Name: \(String(describing: peripheral.name))  RSSI: \(String(RSSI.doubleValue))")
-        
-        if (peripheral.name?.contains("V-RUN1") == true) {
-            print("found treadmill!")
+        if (peripheral.name?.starts(with: "KS-") == true) {
+            print("Found treadmill: \(String(describing: peripheral.name))  RSSI: \(String(RSSI.doubleValue))")
+            
             self.centralManager.stopScan()
+            
             let device = WalkingPad(peripheral: peripheral, callback: self.callback)
             self.device = device
             peripheral.delegate = device
             self.centralManager.connect(peripheral, options: nil)
         }
-    
     }
 
 
@@ -57,7 +60,7 @@ open class BLEConnection: NSObject, CBCentralManagerDelegate, ObservableObject {
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         if peripheral == self.device?.peripheral {
             print("Connected to your BLE Board")
-            peripheral.discoverServices([BLEConnection.bleServiceUUID])
+            peripheral.discoverServices(BLEConnection.bleServiceUUIDs)
         }
     }
     
@@ -68,7 +71,12 @@ open class BLEConnection: NSObject, CBCentralManagerDelegate, ObservableObject {
                 self.centralManager.cancelPeripheralConnection(peripheral)
             }
             
-            self.callback(device.status, DeviceState(time: Date(), speedLevel: 0, status: .Unknown, deviceName: device.status.deviceName))
+            self.callback(device.status, DeviceState(
+                time: Date(),
+                speed: 0,
+                deviceName: device.status.deviceName,
+                statusType: .lastStatus)
+            )
             self.device = nil
         }
     }

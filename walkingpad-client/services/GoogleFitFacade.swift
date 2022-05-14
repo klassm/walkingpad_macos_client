@@ -108,7 +108,7 @@ class GoogleFitFacade {
     }
     
     private func application() -> Application {
-        return Application(name: "DFT200 MacOS Client")
+        return Application(name: "WalkingPad MacOS Client")
     }
     
     private func createDevice(callback: @escaping ((String) -> Void)) {
@@ -119,10 +119,10 @@ class GoogleFitFacade {
                 name: "com.google.step_count.delta"
             ),
             device: Device(
-                manufacturer: "Deskfit",
-                model: "DFT200",
+                manufacturer: "Kingsmith",
+                model: "WalkingPad",
                 type: "unknown",
-                uid: "deskfit",
+                uid: "walkingpad",
                 version: "1"
             ), type: "raw")
         
@@ -175,10 +175,10 @@ class GoogleFitFacade {
     func createWorkoutSession(start: Date, end: Date) {
         let startTimeMillis = Int(start.timeIntervalSince1970 * 1000)
         let endTimeMillis = Int(end.timeIntervalSince1970 * 1000)
-        let id = "dft200_session_\(startTimeMillis)-\(endTimeMillis)"
+        let id = "walkingpad_session_\(startTimeMillis)-\(endTimeMillis)"
         let jsonEncoder = JSONEncoder()
         
-        let session = WorkoutSessionPutData(id: id, name: "Deskfit", description: "", startTimeMillis: startTimeMillis, endTimeMillis: endTimeMillis, version: 1, modifiedTimeMillis: endTimeMillis, application: application(), activityType: 58, activeTimeMillis: endTimeMillis - startTimeMillis)
+        let session = WorkoutSessionPutData(id: id, name: "Kingsmith", description: "WalkingPad", startTimeMillis: startTimeMillis, endTimeMillis: endTimeMillis, version: 1, modifiedTimeMillis: endTimeMillis, application: application(), activityType: 58, activeTimeMillis: endTimeMillis - startTimeMillis)
         
         let json = try? jsonEncoder.encode(session)
         self.googleOAuth.googleApiRequest(path: "/fitness/v1/users/me/sessions/\(id)", method: "PUT", data: json, callback: { response in

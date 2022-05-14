@@ -64,7 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                     .environmentObject(googleOAuth))
         let menuItem = NSMenuItem()
         menuItem.view = view
-        view.frame = NSRect(x: 0, y: 0, width: 200, height: 200)
+        view.frame = NSRect(x: 0, y: 0, width: 200, height: 250)
         
         let menu = NSMenu()
         menu.addItem(menuItem)

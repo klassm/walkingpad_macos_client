@@ -20,9 +20,9 @@
 		5B47EB1F2648015500302145 /* LoginLogoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB1E2648015500302145 /* LoginLogoutButton.swift */; };
 		5B47EB212648032800302145 /* GoogleFitFacade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB202648032800302145 /* GoogleFitFacade.swift */; };
 		5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */; };
+		5B716A322827DC4C00E53E9C /* WalkingPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B716A312827DC4C00E53E9C /* WalkingPad.swift */; };
 		5B766D0A26430E1800FFC606 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; };
 		5B766D0B26430E1800FFC606 /* Embassy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		5B8ACDF8263B28D1003BE2F2 /* DFT200.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */; };
 		5B9E0E4B263560CE0087ECC0 /* BLEConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9E0E4A263560CE0087ECC0 /* BLEConnection.swift */; };
 		5BA17245263EA5810010E483 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17244263EA5810010E483 /* EmptyView.swift */; };
 		5BA17247263EBAC80010E483 /* FooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA17246263EBAC80010E483 /* FooterView.swift */; };
@@ -69,8 +69,8 @@
 		5B47EB1E2648015500302145 /* LoginLogoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginLogoutButton.swift; sourceTree = "<group>"; };
 		5B47EB202648032800302145 /* GoogleFitFacade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleFitFacade.swift; sourceTree = "<group>"; };
 		5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStateView.swift; sourceTree = "<group>"; };
+		5B716A312827DC4C00E53E9C /* WalkingPad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalkingPad.swift; sourceTree = "<group>"; };
 		5B766D0926430E1800FFC606 /* Embassy.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Embassy.framework; path = Carthage/Build/Mac/Embassy.framework; sourceTree = "<group>"; };
-		5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFT200.swift; sourceTree = "<group>"; };
 		5B9E0E4A263560CE0087ECC0 /* BLEConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEConnection.swift; sourceTree = "<group>"; };
 		5BA17244263EA5810010E483 /* EmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyView.swift; sourceTree = "<group>"; };
 		5BA17246263EBAC80010E483 /* FooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterView.swift; sourceTree = "<group>"; };
@@ -152,7 +152,7 @@
 		5B2C72F026346A8200CE4F88 /* models */ = {
 			isa = PBXGroup;
 			children = (
-				5B8ACDF7263B28D1003BE2F2 /* DFT200.swift */,
+				5B716A312827DC4C00E53E9C /* WalkingPad.swift */,
 				5BA1724C263EC1680010E483 /* DeviceState.swift */,
 				5BA17252263EDB0F0010E483 /* Workout.swift */,
 			);
@@ -272,6 +272,7 @@
 				5B2C72ED263469DD00CE4F88 /* DeviceView.swift in Sources */,
 				5BA17249263EBBDC0010E483 /* WaitingForTreadmillView.swift in Sources */,
 				5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */,
+				5B716A322827DC4C00E53E9C /* WalkingPad.swift in Sources */,
 				5BA1724D263EC1680010E483 /* DeviceState.swift in Sources */,
 				5B9E0E4B263560CE0087ECC0 /* BLEConnection.swift in Sources */,
 				5B2C72D9263468B800CE4F88 /* walkingpad_clientApp.swift in Sources */,
@@ -284,7 +285,6 @@
 				5B47EB182647CFAA00302145 /* GoogleOAuth.swift in Sources */,
 				5BA17253263EDB0F0010E483 /* Workout.swift in Sources */,
 				5BA17251263ED5670010E483 /* StoppedOrPauseView.swift in Sources */,
-				5B8ACDF8263B28D1003BE2F2 /* DFT200.swift in Sources */,
 				5BA1724F263ECF720010E483 /* RunningView.swift in Sources */,
 				5B43D84E267F761700A16916 /* RepeatingTimer.swift in Sources */,
 				5B15903D2641BEEC0039C334 /* HttpApi.swift in Sources */,

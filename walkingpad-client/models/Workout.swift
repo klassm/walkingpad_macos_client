@@ -2,8 +2,9 @@ import SwiftUI
 import Foundation
 
 struct WorkoutSaveData: Codable {
-    var steps: Double
-    var meters: Double
+    var steps: Int
+    var distance: Int
+    var walkingSeconds: Int
     var date: Date
 }
 
@@ -16,9 +17,9 @@ struct WorkoutsSaveData: Codable {
 public struct Change {
     var oldTime: Date
     var newTime: Date
-    var steps: Int
-    var oldSpeedLevel: Int
-    var newSpeedLevel: Int
+    var stepsDiff: Int
+    var oldSpeed: Int
+    var newSpeed: Int
 }
 
 
@@ -26,10 +27,13 @@ public typealias OnChangeCallback = (_ change: Change) -> Void
 
 class Workout: ObservableObject {
     @Published
-    public var steps: Double = 0
+    public var steps: Int = 0
     
     @Published
-    public var distanceMeters: Double = 0
+    public var distance: Int = 0
+    
+    @Published
+    public var walkingSeconds: Int = 0
     
     public var lastUpdateTime: Date = Date()
     
@@ -39,52 +43,52 @@ class Workout: ObservableObject {
         self.load()
     }
     
-    private func metersFor(seconds: Double, speedKmh: Double) -> Double {
-        let speedMs = speedKmh / 3.6
-        return speedMs * seconds;
-    }
-    
     public func resetIfDateChanged() {
         let now = Date()
         if now.get(.day) != self.lastUpdateTime.get(.day) {
-            self.distanceMeters = 0
+            self.distance = 0
             self.steps = 0
+            self.walkingSeconds = 0
         }
     }
     
     public func update(_ oldState: DeviceState, _ newState: DeviceState) {
-        if (oldState.status != .Running && newState.status == .Running) {
-            self.resetIfDateChanged()
-        }
-        if (oldState.status != .Running && newState.status != .Running) {
+        self.resetIfDateChanged()
+
+        let stepDiff = newState.steps - oldState.steps
+        let distanceDiff = newState.distance - oldState.distance
+        
+        if (self.steps > 0 && oldState.steps == 0) {
             return
         }
         
-        let seconds = newState.time.timeIntervalSince(oldState.time)
-        let meters = self.metersFor(seconds: seconds, speedKmh: oldState.speedKmh())
-        let steps = meters * 1.31
         
-        print("adding steps \(steps)")
+        print("adding steps=\(stepDiff) distance=\(distanceDiff)")
         
-        let intSteps = Int(steps)
-        if (steps > 0) {
-            let change = Change(oldTime: self.lastUpdateTime, newTime: newState.time, steps: intSteps, oldSpeedLevel: oldState.speedLevel, newSpeedLevel: newState.speedLevel)
+        if (steps > 0 && newState.statusType != .lastStatus) {
+            let change = Change(
+                oldTime: self.lastUpdateTime,
+                newTime: newState.time,
+                stepsDiff: stepDiff,
+                oldSpeed: oldState.speed,
+                newSpeed: newState.speed
+            )
             self.onChangeCallback(change)
         }
         
-        self.steps += steps
-        self.distanceMeters += meters
+        self.steps = self.steps + stepDiff
+        self.distance = self.distance + distanceDiff
+        self.walkingSeconds = newState.walkingTimeSeconds
         self.lastUpdateTime = newState.time
         
-        if (oldState.status == .Running && newState.status != .Running) {
+        if (oldState.speed != newState.speed) {
             save()
         }
     }
     
     
     public func save() {
-        
-        let workoutData = WorkoutSaveData(steps: self.steps, meters: self.distanceMeters, date: self.lastUpdateTime)
+        let workoutData = WorkoutSaveData(steps: self.steps, distance: self.distance, walkingSeconds: self.walkingSeconds, date: self.lastUpdateTime)
         let withoutToday = loadAll().filter { !Calendar.current.isDateInToday($0.date)}
         let newData = withoutToday + [workoutData];
         
@@ -103,7 +107,8 @@ class Workout: ObservableObject {
     
         if let foundWorkout = workout {
             self.steps = foundWorkout.steps
-            self.distanceMeters = foundWorkout.meters
+            self.distance = foundWorkout.distance
+            self.walkingSeconds = foundWorkout.walkingSeconds
             self.lastUpdateTime = foundWorkout.date
         }
     }
@@ -121,10 +126,5 @@ class Workout: ObservableObject {
             print("Could not load workout data \(error)")
             return []
         }
-    }
-    
-    public func testIncStep() {
-        print("update")
-        self.steps += 1
     }
 }
