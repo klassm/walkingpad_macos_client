@@ -25,8 +25,6 @@ func printTime(_ seconds: Int) -> String {
 
 struct WorkoutStateView: View {
     @EnvironmentObject
-    var device: WalkingPad
-    @EnvironmentObject
     var workout: Workout
 
     var body: some View {

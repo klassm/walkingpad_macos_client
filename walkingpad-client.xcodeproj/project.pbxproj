@@ -17,13 +17,14 @@
 		5B44054E282F994400A29A8D /* BluetoothDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B44054D282F994400A29A8D /* BluetoothDiscoveryService.swift */; };
 		5B440550282FA53F00A29A8D /* WalkingPadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B44054F282FA53F00A29A8D /* WalkingPadService.swift */; };
 		5B440553282FA72600A29A8D /* WalkingPadCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B440552282FA72600A29A8D /* WalkingPadCommand.swift */; };
+		5B440555282FD38000A29A8D /* WorkoutsSaveData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B440554282FD38000A29A8D /* WorkoutsSaveData.swift */; };
+		5B440557282FD39900A29A8D /* Change.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B440556282FD39900A29A8D /* Change.swift */; };
 		5B47EB182647CFAA00302145 /* GoogleOAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB172647CFAA00302145 /* GoogleOAuth.swift */; };
 		5B47EB1A2647D73A00302145 /* OAuth2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B47EB192647D73900302145 /* OAuth2.framework */; };
 		5B47EB1B2647D73A00302145 /* OAuth2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5B47EB192647D73900302145 /* OAuth2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5B47EB1F2648015500302145 /* LoginLogoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB1E2648015500302145 /* LoginLogoutButton.swift */; };
 		5B47EB212648032800302145 /* GoogleFitFacade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47EB202648032800302145 /* GoogleFitFacade.swift */; };
 		5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */; };
-		5B716A322827DC4C00E53E9C /* WalkingPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B716A312827DC4C00E53E9C /* WalkingPad.swift */; };
 		5B766D0A26430E1800FFC606 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; };
 		5B766D0B26430E1800FFC606 /* Embassy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5B766D0926430E1800FFC606 /* Embassy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5B9E0E4B263560CE0087ECC0 /* BluetoothPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9E0E4A263560CE0087ECC0 /* BluetoothPeripheral.swift */; };
@@ -70,12 +71,13 @@
 		5B44054D282F994400A29A8D /* BluetoothDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDiscoveryService.swift; sourceTree = "<group>"; };
 		5B44054F282FA53F00A29A8D /* WalkingPadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkingPadService.swift; sourceTree = "<group>"; };
 		5B440552282FA72600A29A8D /* WalkingPadCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkingPadCommand.swift; sourceTree = "<group>"; };
+		5B440554282FD38000A29A8D /* WorkoutsSaveData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutsSaveData.swift; sourceTree = "<group>"; };
+		5B440556282FD39900A29A8D /* Change.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Change.swift; sourceTree = "<group>"; };
 		5B47EB172647CFAA00302145 /* GoogleOAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleOAuth.swift; sourceTree = "<group>"; };
 		5B47EB192647D73900302145 /* OAuth2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OAuth2.framework; path = Carthage/Build/Mac/OAuth2.framework; sourceTree = "<group>"; };
 		5B47EB1E2648015500302145 /* LoginLogoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginLogoutButton.swift; sourceTree = "<group>"; };
 		5B47EB202648032800302145 /* GoogleFitFacade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleFitFacade.swift; sourceTree = "<group>"; };
 		5B645D6E2660DF32003B03D7 /* WorkoutStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStateView.swift; sourceTree = "<group>"; };
-		5B716A312827DC4C00E53E9C /* WalkingPad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalkingPad.swift; sourceTree = "<group>"; };
 		5B766D0926430E1800FFC606 /* Embassy.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Embassy.framework; path = Carthage/Build/Mac/Embassy.framework; sourceTree = "<group>"; };
 		5B9E0E4A263560CE0087ECC0 /* BluetoothPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothPeripheral.swift; sourceTree = "<group>"; };
 		5BA17244263EA5810010E483 /* EmptyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyView.swift; sourceTree = "<group>"; };
@@ -159,6 +161,8 @@
 			isa = PBXGroup;
 			children = (
 				5BA1724C263EC1680010E483 /* DeviceState.swift */,
+				5B440554282FD38000A29A8D /* WorkoutsSaveData.swift */,
+				5B440556282FD39900A29A8D /* Change.swift */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -192,7 +196,6 @@
 			isa = PBXGroup;
 			children = (
 				5B440551282FA71700A29A8D /* walkingPad */,
-				5B716A312827DC4C00E53E9C /* WalkingPad.swift */,
 				5B9E0E4A263560CE0087ECC0 /* BluetoothPeripheral.swift */,
 				5B44054D282F994400A29A8D /* BluetoothDiscoveryService.swift */,
 				5BA17255263EEF5A0010E483 /* FileSystem.swift */,
@@ -285,11 +288,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B2C72DB263468B800CE4F88 /* ContentView.swift in Sources */,
+				5B440555282FD38000A29A8D /* WorkoutsSaveData.swift in Sources */,
 				5BA17256263EEF5A0010E483 /* FileSystem.swift in Sources */,
 				5B2C72ED263469DD00CE4F88 /* DeviceView.swift in Sources */,
 				5BA17249263EBBDC0010E483 /* WaitingForTreadmillView.swift in Sources */,
 				5B645D6F2660DF32003B03D7 /* WorkoutStateView.swift in Sources */,
-				5B716A322827DC4C00E53E9C /* WalkingPad.swift in Sources */,
 				5BA1724D263EC1680010E483 /* DeviceState.swift in Sources */,
 				5B440550282FA53F00A29A8D /* WalkingPadService.swift in Sources */,
 				5B9E0E4B263560CE0087ECC0 /* BluetoothPeripheral.swift in Sources */,
@@ -300,6 +303,7 @@
 				5BA17259263EF74F0010E483 /* DateExtension.swift in Sources */,
 				5B47EB1F2648015500302145 /* LoginLogoutButton.swift in Sources */,
 				5B44054E282F994400A29A8D /* BluetoothDiscoveryService.swift in Sources */,
+				5B440557282FD39900A29A8D /* Change.swift in Sources */,
 				5BA17245263EA5810010E483 /* EmptyView.swift in Sources */,
 				5B47EB182647CFAA00302145 /* GoogleOAuth.swift in Sources */,
 				5BA17253263EDB0F0010E483 /* Workout.swift in Sources */,

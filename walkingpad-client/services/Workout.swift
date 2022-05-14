@@ -1,27 +1,6 @@
 import SwiftUI
 import Foundation
 
-struct WorkoutSaveData: Codable {
-    var steps: Int
-    var distance: Int
-    var walkingSeconds: Int
-    var date: Date
-}
-
-
-struct WorkoutsSaveData: Codable {
-    var workouts: [WorkoutSaveData]
-}
-
-
-public struct Change {
-    var oldTime: Date
-    var newTime: Date
-    var stepsDiff: Int
-    var oldSpeed: Int
-    var newSpeed: Int
-}
-
 public typealias OnChangeCallback = (_ change: Change) -> Void
 
 class Workout: ObservableObject {
