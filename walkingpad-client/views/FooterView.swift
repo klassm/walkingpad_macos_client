@@ -9,7 +9,7 @@ struct FooterView: View {
         HStack {
             Spacer()
             Button(action: {
-                openURL(URL(string: "https://deskfit-macos-client-stats.netlify.app")!)
+                openURL(URL(string: "https://walkingpad-stats.netlify.app")!)
             }) {
                 Text("Stats")
             }
