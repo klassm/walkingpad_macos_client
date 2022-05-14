@@ -1,13 +1,5 @@
 import CoreBluetooth
 
-public typealias TreadmillCallback = (_ oldState: DeviceState, _ newState: DeviceState) -> Void
-public enum WalkingMode {
-    case manual, automatic
-}
-
-public enum StatusType {
-    case lastStatus, currentStatus
-}
 
 
 open class WalkingPad: NSObject, CBPeripheralDelegate, ObservableObject {
@@ -46,9 +38,9 @@ open class WalkingPad: NSObject, CBPeripheralDelegate, ObservableObject {
         if let services = peripheral.services {
             for service in services {
                 print("Service UUID \(service.uuid)")
-                if BLEConnection.bleServiceUUIDs.contains(service.uuid) {
-                    peripheral.discoverCharacteristics(nil, for: service)
-                }
+//                if BluetoothService.bleServiceUUIDs.contains(service.uuid) {
+//                    peripheral.discoverCharacteristics(nil, for: service)
+//                }
             }
         }
     }

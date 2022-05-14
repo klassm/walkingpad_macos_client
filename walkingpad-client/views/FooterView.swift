@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FooterView: View {
-    @EnvironmentObject var bleConnection: BLEConnection
+    @EnvironmentObject var walkingPadService: WalkingPadService
     @EnvironmentObject var workout: Workout
     @Environment(\.openURL) var openURL
     
@@ -15,7 +15,7 @@ struct FooterView: View {
             }
             LoginLogoutButton()
             Button(action: {
-                bleConnection.stop()
+                walkingPadService.command()?.setSpeed(speed: 0)
                 workout.save()
                 exit(0)
             }) {

@@ -13,7 +13,8 @@ struct MenuBarPopoverApp: App {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var workout = Workout()
-    private var bleConnection = BLEConnection()
+    private var walkingPadService: WalkingPadService
+    private var bluetoothDiscoverService: BluetoothDiscoveryService
     private var googleOAuth = GoogleOAuth()
     private var stepsUploader: StepsUploader
     private var updateTimer: RepeatingTimer? = nil;
@@ -23,17 +24,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     
     override init() {
+        self.walkingPadService = WalkingPadService()
+        self.bluetoothDiscoverService = BluetoothDiscoveryService(walkingPadService)
         self.stepsUploader = StepsUploader(googleFitFacade: GoogleFitFacade(self.googleOAuth))
         
         super.init()
+        
         self.updateTimer = RepeatingTimer(interval: 5, eventHandler: {
-            self.bleConnection.device?.updateStatus()
+            self.walkingPadService.command()?.updateStatus()
         })
-        bleConnection.callback = { oldState, newState in self.workout.update(oldState, newState) }
+        
         workout.onChangeCallback = {
             change in DispatchQueue.global(qos: .userInitiated).async {
                 self.stepsUploader.handleChange(change)
             }
+        }
+        self.walkingPadService.callback = { oldState, newState in
+            self.workout.update(oldState, newState)
         }
         
         self.updateTimer?.start();
@@ -48,19 +55,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func receiveWakeNotification(sender: AnyObject){
         NSLog("Reveived wake notification, starting timer");
-        self.bleConnection.start()
+        self.bluetoothDiscoverService.start()
         self.updateTimer?.start()
     
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         DispatchQueue.global(qos: .userInitiated).async {
-            startHttpServer(bleConnection: self.bleConnection, workout: self.workout)
+            startHttpServer(walkingPadService: self.walkingPadService, workout: self.workout)
         }
         
         let view = NSHostingView(rootView: ContentView()
                                     .environmentObject(workout)
-                                    .environmentObject(bleConnection)
+                                    .environmentObject(walkingPadService)
                                     .environmentObject(googleOAuth))
         let menuItem = NSMenuItem()
         menuItem.view = view
@@ -78,7 +85,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func update() {
-        self.bleConnection.device?.updateStatus()
+        self.walkingPadService.command()?.updateStatus()
     }
     
     // register our app to get notified when launched via URL

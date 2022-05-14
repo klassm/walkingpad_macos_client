@@ -4,14 +4,15 @@ import CoreBluetooth
 
 struct RunningView: View {
     @EnvironmentObject
-    var device: WalkingPad
+    var walkingPadService: WalkingPadService
 
     var body: some View {
-        let speedLevel = self.device.status.speed
-        
+        let state = self.walkingPadService.lastStatus()
+        let speedLevel = state?.speed ?? 0
+
         let renderButton = { (speed: Int) in
             Button(action: {
-                device.setSpeed(speed: UInt8(speed))
+                self.walkingPadService.command()?.setSpeed(speed: UInt8(speed))
             }) {
                 Text(String(format: "%.1f", Float(speed) / 10.0))
             }
@@ -21,11 +22,11 @@ struct RunningView: View {
         }
         
         let renderWalkingModeButton = {(mode: WalkingMode) in
-            Button(action: { device.setWalkingMode(mode: mode)}) {
+            Button(action: { self.walkingPadService.command()?.setWalkingMode(mode: mode)}) {
                 Text(mode == .manual ? "Manual" : "Automatic")
             }
-            .background(mode == device.status.walkingMode ? Color.blue : Color.secondary)
-            .foregroundColor(mode == device.status.walkingMode ? Color.white : Color.black)
+            .background(mode == state?.walkingMode ? Color.blue : Color.secondary)
+            .foregroundColor(mode == state?.walkingMode ? Color.white : Color.black)
             .cornerRadius(5)
         }
         
@@ -48,7 +49,7 @@ struct RunningView: View {
         VStack {
             WorkoutStateView()
             
-            if (self.device.status.walkingMode == .manual) {
+            if (state?.walkingMode == .manual) {
                 renderSpeedRows()
             }
             
@@ -59,7 +60,7 @@ struct RunningView: View {
             
             HStack {
                 Button(action: {
-                    self.device.stop()
+                    self.walkingPadService.command()?.setSpeed(speed: 0)
                 }) {
                     Text("Stop")
                 }

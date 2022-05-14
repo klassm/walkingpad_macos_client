@@ -52,13 +52,13 @@ class Workout: ObservableObject {
         }
     }
     
-    public func update(_ oldState: DeviceState, _ newState: DeviceState) {
+    public func update(_ oldState: DeviceState?, _ newState: DeviceState) {
         self.resetIfDateChanged()
 
-        let stepDiff = newState.steps - oldState.steps
-        let distanceDiff = newState.distance - oldState.distance
+        let stepDiff = newState.steps - (oldState?.steps ?? 0)
+        let distanceDiff = newState.distance - (oldState?.distance ?? 0)
         
-        if (self.steps > 0 && oldState.steps == 0) {
+        if (self.steps > 0 && oldState == nil) {
             return
         }
         
@@ -70,7 +70,7 @@ class Workout: ObservableObject {
                 oldTime: self.lastUpdateTime,
                 newTime: newState.time,
                 stepsDiff: stepDiff,
-                oldSpeed: oldState.speed,
+                oldSpeed: oldState?.speed ?? 0,
                 newSpeed: newState.speed
             )
             self.onChangeCallback(change)
@@ -81,7 +81,7 @@ class Workout: ObservableObject {
         self.walkingSeconds = newState.walkingTimeSeconds
         self.lastUpdateTime = newState.time
         
-        if (oldState.speed != newState.speed) {
+        if (oldState != nil && oldState?.speed != newState.speed) {
             save()
         }
     }

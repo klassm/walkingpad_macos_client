@@ -4,13 +4,13 @@ import CoreBluetooth
 
 struct DeviceView: View {
     @EnvironmentObject
-    var device: WalkingPad
+    var walkingPadService: WalkingPadService
 
     var body: some View {
-        if (device.peripheral == nil) {
+        if (!walkingPadService.isConnected()) {
             return AnyView(WaitingForTreadmillView())
         }
-        if (device.status.speed == 0) {
+        if (walkingPadService.lastStatus()?.speed ?? 0 == 0) {
             return AnyView(StoppedOrPausedView())
         }
         return AnyView(RunningView())

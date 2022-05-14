@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var bleConnection: BLEConnection
+    @EnvironmentObject var walkingPadService: WalkingPadService
     @EnvironmentObject var workout: Workout
     @EnvironmentObject var googleOAuth: GoogleOAuth
     
@@ -9,9 +9,8 @@ struct ContentView: View {
     var body: some View {
         
         VStack {
-            if let device = bleConnection.device {
+            if walkingPadService.isConnected() {
                 DeviceView()
-                    .environmentObject(device)
             } else {
                 WaitingForTreadmillView()
             }

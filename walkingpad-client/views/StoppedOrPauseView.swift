@@ -4,14 +4,14 @@ import CoreBluetooth
 struct StoppedOrPausedView: View {
     
     @EnvironmentObject
-    var device: WalkingPad
+    var walkingPadService: WalkingPadService
 
     var body: some View {
         VStack {
             WorkoutStateView()
             HStack {
                 Button(action: {
-                    self.device.start()
+                    self.walkingPadService.command()?.start()
                 }) {
                     Text("Start")
                 }

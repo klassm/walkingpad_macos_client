@@ -1,5 +1,14 @@
 import Foundation
 
+
+public enum WalkingMode {
+    case manual, automatic
+}
+
+public enum StatusType {
+    case lastStatus, currentStatus
+}
+
 public struct DeviceState {
     var time: Date
     var walkingTimeSeconds: Int = 0

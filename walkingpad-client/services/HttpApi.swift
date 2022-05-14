@@ -8,7 +8,7 @@ struct WorkoutApiData: Codable {
     var date: String
 }
 
-func startHttpServer(bleConnection: BLEConnection, workout: Workout) {
+func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
     let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -31,28 +31,47 @@ func startHttpServer(bleConnection: BLEConnection, workout: Workout) {
         
         
         let handlePost = { () in
-            guard let treadmill = bleConnection.device else {
+            guard let command = walkingPadService.command() else {
                 sendStatus(428, "Treadmill not connected")
                 return
             }
-            
+
             if (path == "/treadmill/stop") {
-                treadmill.stop()
+                command.setSpeed(speed: 0)
                 sendSuccess()
                 return
             }
-            
+
             if (path == "/treadmill/start") {
-                treadmill.start()
+                command.start()
                 sendSuccess()
                 return
             }
+
             
-            if (path == "/treadmill/pause") {
-                treadmill.setSpeed(speed: 0)
+            if (path == "/treadmill/faster") {
+                let speed = walkingPadService.lastStatus()?.speed
+                if (speed == nil) {
+                    command.start()
+                } else {
+                    command.setSpeed(speed: UInt8((speed ?? 0) + 5))
+                }
                 sendSuccess()
                 return
             }
+
+            
+            if (path == "/treadmill/slower") {
+                let speed = walkingPadService.lastStatus()?.speed
+                if (speed == nil) {
+                    command.setSpeed(speed: 0)
+                } else {
+                    command.setSpeed(speed: UInt8((speed ?? 0) - 5))
+                }
+                sendSuccess()
+                return
+            }
+
             
             if (path.hasPrefix("/treadmill/speed/")) {
                 let speedRegex = try! NSRegularExpression(pattern: "/treadmill/speed/([1-8]0)")
@@ -60,16 +79,16 @@ func startHttpServer(bleConnection: BLEConnection, workout: Workout) {
                     sendStatus(404, "Not found")
                     return
                 }
-                
+
                 let range = Range(match.range(at: 1), in: path)!
                 let speedMatch = path[range]
                 let speed = UInt8(speedMatch)!
-                treadmill.setSpeed(speed: speed)
+                command.setSpeed(speed: speed)
 
                 sendSuccess()
                 return
             }
-            
+
             sendStatus(404, "Not found")
         }
         
