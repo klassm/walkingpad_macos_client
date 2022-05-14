@@ -39,7 +39,7 @@ public class WalkingPadCommand {
     }
     
     public func setWalkingMode(mode: WalkingMode) {
-        let mode: UInt8 = mode == .automatic ? 1 : 0
+        let mode: UInt8 = mode == .automatic ? 0 : 1
         self.executeCommand(command: [247, 162, 2, mode, 0xff, 253])
     }
     
