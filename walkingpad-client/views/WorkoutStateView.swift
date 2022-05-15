@@ -13,7 +13,7 @@ func stepsTextFor(_ steps: Int) -> String {
     return String(steps)
 }
 
-func printTime(_ seconds: Int) -> String {
+func formatTime(_ seconds: Int) -> String {
     let formatter = DateComponentsFormatter()
     formatter.allowedUnits = [.hour, .minute, .second]
     formatter.unitsStyle = .positional
@@ -26,10 +26,14 @@ func printTime(_ seconds: Int) -> String {
 struct WorkoutStateView: View {
     @EnvironmentObject
     var workout: Workout
+    
+    @EnvironmentObject
+    var walkingPadService: WalkingPadService
 
     var body: some View {
+        let statusSeconds = walkingPadService.lastStatus()?.walkingTimeSeconds ?? 0
         VStack {
-            Text(printTime(workout.walkingSeconds))
+            Text("\(formatTime(workout.walkingSeconds)) (\(formatTime(statusSeconds)))")
             Text("\(workout.steps) Steps")
             Text("\(distanceTextFor(workout.distance))")
         }

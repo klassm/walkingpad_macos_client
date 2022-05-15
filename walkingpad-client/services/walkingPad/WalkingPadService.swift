@@ -20,6 +20,8 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
     public func onConnect(_ connection: WalkingPadConnection) {
         self.connection = connection
         self.connection?.peripheral.delegate = self
+        connection.peripheral.setNotifyValue(true, for: connection.notifyCharacteristic)
+        print("Initialized walking pad connection to \(connection.peripheral.name ?? "unknown")")
     }
     
     public func onDisconnect() {
@@ -57,13 +59,16 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
             guard let statusType = statusTypeFrom(Array(byteArray[0...2])) else { return }
             guard let connection = self.connection else { return }
             
+            if (byteArray.count < 13) {
+                print("Unknown status array length")
+                return
+            }
+            
             let speed = byteArray[3]
             let isManualMode = byteArray[4] == 1
             let distance = sumFrom(Array(byteArray[8...10])) * 10
             let steps = sumFrom(Array(byteArray[11...13]))
             let walkingTimeSeconds = sumFrom(Array(byteArray[5...7]))
-
-            print("Update with status type \(statusType)")
             
             let status = DeviceState(
                 time: Date(),

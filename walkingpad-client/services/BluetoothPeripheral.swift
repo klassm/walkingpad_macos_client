@@ -25,9 +25,9 @@ open class BluetoothPeripheral: NSObject, CBPeripheralDelegate {
     }
     
     public func discover() {
+        print("discovering \(self.peripheral.name ?? "unknown")")
         self.peripheral.delegate = self
         self.peripheral.discoverServices(BluetoothPeripheral.walkingPadServiceUUIDs)
-        
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -37,7 +37,6 @@ open class BluetoothPeripheral: NSObject, CBPeripheralDelegate {
             for service in relevantServices {
                 peripheral.discoverCharacteristics(nil, for: service)
             }
-            print("Service discover done")
         }
     }
 
@@ -58,7 +57,6 @@ open class BluetoothPeripheral: NSObject, CBPeripheralDelegate {
         }
         self.nonDiscoveredServices = self.nonDiscoveredServices.filter({ nonDiscoveredService in nonDiscoveredService != service })
         self.notifyIfWalkingPad()
-        print("Characteristic discover done")
     }
     
     

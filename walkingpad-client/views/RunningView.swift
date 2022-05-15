@@ -51,6 +51,8 @@ struct RunningView: View {
             
             if (state?.walkingMode == .manual) {
                 renderSpeedRows()
+            } else {
+                Text("Speed: \(String(format: "%.00f km/h", Double(speedLevel) / 10))")
             }
             
             HStack {

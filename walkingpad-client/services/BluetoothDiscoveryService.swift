@@ -3,9 +3,9 @@ import Foundation
 
 open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, ObservableObject {
     private var centralManager: CBCentralManager! = nil
-    public var discoveryInProgressPeripherals: Set<CBPeripheral> = []
     public var peripheralBlacklist: Set<String> = []
     private var walkingPadService: WalkingPadService
+    private var bluetoothPeripheral: BluetoothPeripheral? = nil
 
     init(_ walkingPadService: WalkingPadService) {
         self.walkingPadService = walkingPadService
@@ -31,8 +31,14 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
 
     // Handles the result of the scan
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        if (peripheral.name?.starts(with: "KS-") == true && !self.peripheralBlacklist.contains(peripheral.identifier.uuidString)) {
-            self.discoveryInProgressPeripherals.insert(peripheral)
+        if (peripheral.name?.starts(with: "KS-") == true
+            && !self.peripheralBlacklist.contains(peripheral.identifier.uuidString)
+            && self.bluetoothPeripheral == nil
+        ) {
+            self.bluetoothPeripheral = BluetoothPeripheral(peripheral: peripheral, callback: { bluetoothPeripheral, isWalkingPad in
+                self.handleDiscoveredDevice(bluetoothPeripheral, isWalkingPad)
+                
+            })
             self.centralManager.connect(peripheral, options: nil)
         }
     }
@@ -40,13 +46,11 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
 
     // The handler if we do connect successfully
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        BluetoothPeripheral(peripheral: peripheral, callback: { bluetoothPeripheral, isWalkingPad in
-            self.handleDiscoveredDevice(bluetoothPeripheral, isWalkingPad)
-            
-        }).discover()
+        self.bluetoothPeripheral?.discover()
     }
     
     private func handleDiscoveredDevice(_ peripheral: BluetoothPeripheral, _ isWalkingPad: Bool) {
+        self.bluetoothPeripheral = nil
         if (isWalkingPad) {
             self.walkingPadService.onConnect(WalkingPadConnection(
                 peripheral: peripheral.peripheral,
@@ -61,7 +65,7 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
     
     public func stop() {
         self.centralManager.stopScan()
-        self.discoveryInProgressPeripherals = []
+        self.bluetoothPeripheral = nil
     }
     
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {

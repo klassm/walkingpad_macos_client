@@ -44,6 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         self.updateTimer?.start();
+        self.bluetoothDiscoverService.start()
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receiveSleepNotification), name: NSWorkspace.willSleepNotification, object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receiveWakeNotification), name: NSWorkspace.didWakeNotification, object: nil)
     }
