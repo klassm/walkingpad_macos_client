@@ -21,3 +21,6 @@ Download the latest release from the [releases section](https://github.com/klass
 ![Stats](docs/stats.png)
 
 
+### Credits
+
+The implementation is heavily inspired by [ph4r05/ph4-walkingpad](https://github.com/ph4r05/ph4-walkingpad).
