@@ -4,7 +4,7 @@ A native MacOS Client (as status bar app) to watch your steps.
 
 ### Installation
 
-Download the latest release from the [releases section](https://github.com/klassm/walkingpad-macos-client/releases).
+Download the latest release from the [releases section](https://github.com/klassm/walkingpad_macos_client/releases).
 
 ### Features
 

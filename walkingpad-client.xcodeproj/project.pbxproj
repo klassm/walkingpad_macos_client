@@ -59,7 +59,7 @@
 		5B1590382641BD350039C334 /* Swifter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Swifter.xcframework; path = Carthage/Build/Swifter.xcframework; sourceTree = "<group>"; };
 		5B15903C2641BEEC0039C334 /* HttpApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpApi.swift; sourceTree = "<group>"; };
 		5B15903E2641C4870039C334 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
-		5B2C72D5263468B800CE4F88 /* Deskfit Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Deskfit Client.app"; path = "Walkingpad Client.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B2C72D5263468B800CE4F88 /* Walkingpad Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Walkingpad Client.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B2C72D8263468B800CE4F88 /* walkingpad_clientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = walkingpad_clientApp.swift; sourceTree = "<group>"; };
 		5B2C72DA263468B800CE4F88 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5B2C72DC263468B900CE4F88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -128,7 +128,7 @@
 		5B2C72D6263468B800CE4F88 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5B2C72D5263468B800CE4F88 /* Deskfit Client.app */,
+				5B2C72D5263468B800CE4F88 /* Walkingpad Client.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -235,7 +235,7 @@
 			);
 			name = "walkingpad-client";
 			productName = "walkingpad-client";
-			productReference = 5B2C72D5263468B800CE4F88 /* Deskfit Client.app */;
+			productReference = 5B2C72D5263468B800CE4F88 /* Walkingpad Client.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -458,7 +458,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 0.0.1;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
 				PRODUCT_NAME = "Walkingpad Client";
@@ -489,7 +489,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 0.0.1;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
 				PRODUCT_NAME = "Walkingpad Client";
