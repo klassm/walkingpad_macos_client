@@ -1,3 +1,5 @@
 Carthage
 *.alfredworkflow
 .DS_Store
+walkingpad-client.xcodeproj/project.pbxproj
+walkingpad-client.xcodeproj/project.xcworkspace/xcuserdata

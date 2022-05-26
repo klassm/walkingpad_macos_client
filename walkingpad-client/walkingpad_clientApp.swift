@@ -18,15 +18,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var googleOAuth = GoogleOAuth()
     private var stepsUploader: StepsUploader
     private var updateTimer: RepeatingTimer? = nil;
+    private var mqttService: MqttService
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
-    
     
     override init() {
         self.walkingPadService = WalkingPadService()
         self.bluetoothDiscoverService = BluetoothDiscoveryService(walkingPadService)
         self.stepsUploader = StepsUploader(googleFitFacade: GoogleFitFacade(self.googleOAuth))
+        self.mqttService = MqttService(FileSystem())
         
         super.init()
         
@@ -41,8 +42,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
+            self.mqttService.publish(state: newState)
         }
         
+        self.mqttService.start()
         self.updateTimer?.start();
         self.bluetoothDiscoverService.start()
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receiveSleepNotification), name: NSWorkspace.willSleepNotification, object: nil)

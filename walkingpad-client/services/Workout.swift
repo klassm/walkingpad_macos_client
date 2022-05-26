@@ -46,10 +46,12 @@ class Workout: ObservableObject {
             self.distance = newState.distance
             self.walkingSeconds = newState.walkingTimeSeconds
             self.lastUpdateTime = newState.time
-            save()
             return
         }
         
+        if (oldState?.speed != newState.speed) {
+            save()
+        }
         
         print("adding steps=\(stepDiff) distance=\(distanceDiff)")
         
