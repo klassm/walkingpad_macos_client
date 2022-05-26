@@ -18,6 +18,7 @@ A native MacOS Client (as status bar app) to watch your steps.
 Download the latest release from the [releases section](https://github.com/klassm/walkingpad_macos_client/releases).
 
 Please make sure to grant the app Bluetooth permissions, to ensure the app can communicate with the WalkingPad device.
+
 ![Bluetooth Permission](docs/bluetooth_connection.png)
 
 #### MQTT Configuration
