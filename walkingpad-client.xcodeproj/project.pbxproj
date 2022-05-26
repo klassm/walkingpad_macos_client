@@ -444,6 +444,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"walkingpad-client/Preview Content\"";
 				DEVELOPMENT_TEAM = 6C52QR5849;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -458,7 +459,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
 				PRODUCT_NAME = "Walkingpad Client";
@@ -475,6 +476,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"walkingpad-client/Preview Content\"";
 				DEVELOPMENT_TEAM = 6C52QR5849;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -489,7 +491,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "klassm.walkingpad-client";
 				PRODUCT_NAME = "Walkingpad Client";

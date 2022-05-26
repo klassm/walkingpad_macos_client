@@ -16,7 +16,7 @@ func stepsTextFor(_ steps: Int) -> String {
 func formatTime(_ seconds: Int) -> String {
     let formatter = DateComponentsFormatter()
     formatter.allowedUnits = [.hour, .minute, .second]
-    formatter.unitsStyle = .positional
+    formatter.unitsStyle = .abbreviated
 
     return formatter.string(from: TimeInterval(seconds)) ?? ""
     

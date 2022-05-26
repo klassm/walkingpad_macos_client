@@ -25,7 +25,24 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
     }
     
     public func onDisconnect() {
+        print("WalkingPad device disconnected, setting state to nil")
+        self.notifyZeroSpeed()
         self.lastState = nil
+    }
+    
+    private func notifyZeroSpeed() {
+        guard let state = self.lastState else { return }
+        print("Notifying with zero speed.")
+        self.callback?(state, DeviceState(
+            time: Date(),
+            walkingTimeSeconds: state.walkingTimeSeconds,
+            speed: 0,
+            steps: state.steps,
+            distance: state.distance,
+            walkingMode: state.walkingMode,
+            deviceName: state.deviceName,
+            statusType: state.statusType
+        ))
     }
     
     public func isCurrentDevice(peripheral: CBPeripheral) -> Bool {

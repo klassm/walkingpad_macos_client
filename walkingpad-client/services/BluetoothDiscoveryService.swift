@@ -13,6 +13,7 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
     
     public func start() {
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
+        self.bluetoothPeripheral = nil
         print("Central Manager State: \(self.centralManager.state)")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.centralManagerDidUpdateState(self.centralManager)
@@ -43,24 +44,24 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
         }
     }
 
-
-    // The handler if we do connect successfully
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         self.bluetoothPeripheral?.discover()
     }
     
     private func handleDiscoveredDevice(_ peripheral: BluetoothPeripheral, _ isWalkingPad: Bool) {
-        self.bluetoothPeripheral = nil
         if (isWalkingPad) {
             self.walkingPadService.onConnect(WalkingPadConnection(
                 peripheral: peripheral.peripheral,
                 notifyCharacteristic: peripheral.notifyCharacteristic!,
                 commandCharacteristic: peripheral.commandCharacteristic!
             ))
-            return
+            self.centralManager.stopScan()
+            self.bluetoothPeripheral = nil
+        } else {
+            self.peripheralBlacklist.insert(peripheral.peripheral.identifier.uuidString)
+            self.centralManager?.cancelPeripheralConnection(peripheral.peripheral)
+            self.bluetoothPeripheral = nil
         }
-        self.peripheralBlacklist.insert(peripheral.peripheral.identifier.uuidString)
-        self.centralManager?.cancelPeripheralConnection(peripheral.peripheral)
     }
     
     public func stop() {
@@ -69,6 +70,7 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
     }
     
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        print("Device is disconnected, starting scan again.")
         if (self.walkingPadService.isCurrentDevice(peripheral: peripheral)) {
             self.walkingPadService.onDisconnect()
         }

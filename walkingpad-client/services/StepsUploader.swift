@@ -19,7 +19,6 @@ class StepsUploader {
             self.startTime = Date()
         }
         
-        print("\(hasSpeedChange) \(accumulatedSteps) \(change.oldSpeed) \(change.newSpeed)")
         if (!hasSpeedChange || accumulatedSteps < 100 || change.oldSpeed == 0 || change.newSpeed != 0) {
             return
         }
