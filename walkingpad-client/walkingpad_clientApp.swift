@@ -42,7 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
-            self.mqttService.publish(state: newState)
+            self.mqttService.publish(oldState: oldState, newState: newState)
         }
         
         self.mqttService.start()

@@ -53,11 +53,14 @@ class MqttService {
         }
     }
     
-    public func publish(state: DeviceState) {
+    public func publish(oldState: DeviceState?, newState: DeviceState) {
+        if (oldState?.speed != newState.speed) {
+            return
+        }
         guard let connection = self.connection else { return }
         let config = connection.config
-        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/speed", string: "\(state.speedKmh())"))
-        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/steps", string: "\(state.steps)"))
+        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/speed", string: "\(newState.speedKmh())"))
+        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/steps", string: "\(newState.steps)"))
     }
     
     private func loadConfigFile() -> Data? {
