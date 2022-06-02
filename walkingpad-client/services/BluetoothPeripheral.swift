@@ -44,13 +44,15 @@ open class BluetoothPeripheral: NSObject, CBPeripheralDelegate {
         print("Service uuid=\(service.uuid) description=\(service.description)")
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                print ("> Characteristic uuid=\(characteristic.uuid) description=\(characteristic.description) \(characteristic.properties)")
+
                 let asString = characteristic.uuid.uuidString
-                if (asString.starts(with: "FE01")) {
+                print ("> Characteristic uuid=\(characteristic.uuid) (\(asString)) description=\(characteristic.description) \(characteristic.properties)")
+          
+                if (asString.isEqual("FE01")) {
                     peripheral.delegate = self
                     self.notifyCharacteristic = characteristic
                 }
-                if (asString.starts(with: "FE02")) {
+                if (asString.isEqual("FE02")) {
                     self.commandCharacteristic = characteristic
                 }
             }
@@ -58,8 +60,7 @@ open class BluetoothPeripheral: NSObject, CBPeripheralDelegate {
         self.nonDiscoveredServices = self.nonDiscoveredServices.filter({ nonDiscoveredService in nonDiscoveredService != service })
         self.notifyIfWalkingPad()
     }
-    
-    
+
     private func notifyIfWalkingPad() {
         if (!self.nonDiscoveredServices.isEmpty) {
             return

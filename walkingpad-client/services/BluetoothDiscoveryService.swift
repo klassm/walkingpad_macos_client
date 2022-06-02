@@ -32,8 +32,7 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
 
     // Handles the result of the scan
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        if (peripheral.name?.starts(with: "KS-") == true
-            && !self.peripheralBlacklist.contains(peripheral.identifier.uuidString)
+        if (!self.peripheralBlacklist.contains(peripheral.identifier.uuidString)
             && self.bluetoothPeripheral == nil
         ) {
             self.bluetoothPeripheral = BluetoothPeripheral(peripheral: peripheral, callback: { bluetoothPeripheral, isWalkingPad in
