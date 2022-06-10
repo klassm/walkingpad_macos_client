@@ -54,9 +54,6 @@ class MqttService {
     }
     
     public func publish(oldState: DeviceState?, newState: DeviceState) {
-        if (oldState?.speed != newState.speed) {
-            return
-        }
         guard let connection = self.connection else { return }
         let config = connection.config
         connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/speed", string: "\(newState.speedKmh())"))

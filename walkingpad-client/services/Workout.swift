@@ -80,6 +80,9 @@ class Workout: ObservableObject {
     }
     
     public func load() {
+        if (self.steps > 0) {
+            return
+        }
         let workouts = loadAll()
         let workout = workouts.first (where: { entry in Calendar.current.isDateInToday(entry.date) })
     
