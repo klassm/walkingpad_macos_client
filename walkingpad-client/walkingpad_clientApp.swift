@@ -42,7 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
-            self.mqttService.publish(oldState: oldState, newState: newState)
+            self.mqttService.publish(oldState: oldState, newState: newState, workoutState: self.workout.workoutState())
         }
         
         self.mqttService.start()
@@ -55,12 +55,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func receiveSleepNotification(sender: AnyObject){
         NSLog("Reveived sleep notification, stopping timer");
         self.updateTimer?.stop();
+        self.mqttService.stop()
     }
 
     @objc func receiveWakeNotification(sender: AnyObject){
         NSLog("Reveived wake notification, starting timer");
         self.bluetoothDiscoverService.start()
         self.updateTimer?.start()
+        self.mqttService.start()
     
     }
     

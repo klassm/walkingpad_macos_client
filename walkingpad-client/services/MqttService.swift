@@ -6,7 +6,7 @@ struct MqttConfiguration: Codable {
     var password: String
     var host: String
     var port: UInt16
-    var topic: String;
+    var topic: String
 }
 
 struct MqttConnection {
@@ -14,9 +14,17 @@ struct MqttConnection {
     var config: MqttConfiguration
 }
 
+struct MqttData: Codable {
+    var stepsWalkingpad: Int
+    var stepsTotal: Int
+    var distanceTotal: Int
+    var speedKmh: Double
+}
+
 class MqttService {
     private var connection: MqttConnection?
     private var fileSystem: FileSystem
+    private var lastMessageTime: Date?
     
     init(_ fileSystem: FileSystem) {
         self.fileSystem = fileSystem
@@ -40,6 +48,11 @@ class MqttService {
         }
     }
     
+    func stop() {
+        guard let connection = self.connection else { return }
+        connection.mqtt.disconnect()
+    }
+    
     private func loadConfig() -> MqttConfiguration? {
         guard let mqttConfigRaw = self.loadConfigFile() else { return nil }
         
@@ -53,11 +66,35 @@ class MqttService {
         }
     }
     
-    public func publish(oldState: DeviceState?, newState: DeviceState) {
+    private func shouldSend(oldState: DeviceState?, newState: DeviceState) -> Bool {
+        let oldSpeed = oldState?.speed;
+        let newSpeed = newState.speed
+        guard let lastMessageTime = self.lastMessageTime else { return true }
+        
+        if (oldSpeed != newSpeed) {
+            return true
+        }
+        
+        let now = Date()
+        let passedSeconds = now.timeIntervalSince(lastMessageTime)
+        return passedSeconds > 30
+    }
+    
+    public func publish(oldState: DeviceState?, newState: DeviceState, workoutState: WorkoutState) {
         guard let connection = self.connection else { return }
+        if (!shouldSend(oldState: oldState, newState: newState)) {
+            return
+        }
+        
         let config = connection.config
-        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/speed", string: "\(newState.speedKmh())"))
-        connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)/steps", string: "\(newState.steps)"))
+        do {
+            let jsonData = try JSONEncoder().encode(MqttData(stepsWalkingpad: newState.steps, stepsTotal: workoutState.steps, distanceTotal: workoutState.distance, speedKmh: newState.speedKmh()))
+            let json = [UInt8](jsonData)
+            connection.mqtt.publish(CocoaMQTTMessage(topic: "\(config.topic)", payload: json))
+            self.lastMessageTime = Date()
+        } catch {
+            print("error while encoding mqtt data, \(error)")
+        }
     }
     
     private func loadConfigFile() -> Data? {

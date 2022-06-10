@@ -3,6 +3,12 @@ import Foundation
 
 public typealias OnChangeCallback = (_ change: Change) -> Void
 
+struct WorkoutState {
+    var steps: Int
+    var distance: Int
+    var walkingSeconds: Int
+}
+
 class Workout: ObservableObject {
     @Published
     public var steps: Int = 0
@@ -107,5 +113,9 @@ class Workout: ObservableObject {
             print("Could not load workout data \(error)")
             return []
         }
+    }
+    
+    public func workoutState() -> WorkoutState {
+        return WorkoutState(steps: self.steps, distance: self.distance, walkingSeconds: self.walkingSeconds)
     }
 }
