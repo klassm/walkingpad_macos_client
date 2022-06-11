@@ -42,18 +42,31 @@ place this file in `~/Library/Containers/klassm.walkingpad-client/Data/Library/A
 
 The app will automatically read the config data and start to publish messages.
 
+An example message looks like the following:
+```
+{
+    "speedKmh":1.5,
+    "stepsTotal":19202,
+    "distanceTotal":4690,
+    "stepsWalkingpad":510
+}
+```
+
 Home Assistant can afterwards be configured to read the data.
 
 ```yaml
-- platform: mqtt
-  name: "WalkingPad Speed"
-  object_id: "walkingpad_speed"
-  state_topic: "homeassistant/sensor/walkingpad/speed"
-  unit_of_measurement: "km/h"
-- platform: mqtt
-  name: "WalkingPad Steps"
-  object_id: "walkingpad_steps"
-  state_topic: "homeassistant/sensor/walkingpad/steps"
+mqtt:
+  sensor:
+    - name: "WalkingPad Speed"
+      object_id: "walkingpad_speed"
+      state_topic: "homeassistant/sensor/walkingpad"
+      value_template: "{{ value_json.speedKmh }}"
+      unit_of_measurement: "km/h"
+    - name: "WalkingPad Steps"
+      object_id: "walkingpad_steps"
+      state_topic: "homeassistant/sensor/walkingpad"
+      value_template: "{{ value_json.stepsTotal }}"
+      unit_of_measurement: "Steps"
 ```
 
 ### Screenshots
