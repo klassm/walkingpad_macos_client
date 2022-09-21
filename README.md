@@ -1,4 +1,4 @@
-#  Deskfit MacOS Client
+#  WalkingPad MacOS Client
 
 A native MacOS Client (as status bar app) to watch your steps.
 
