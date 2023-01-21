@@ -14,6 +14,7 @@ open class BluetoothDiscoveryService: NSObject, CBCentralManagerDelegate, Observ
     public func start() {
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
         self.bluetoothPeripheral = nil
+        self.walkingPadService.onDisconnect()
         print("Central Manager State: \(self.centralManager.state)")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.centralManagerDidUpdateState(self.centralManager)

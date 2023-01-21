@@ -29,7 +29,7 @@ class Workout: ObservableObject {
     
     public func resetIfDateChanged() {
         let now = Date()
-        if now.get(.day) != self.lastUpdateTime.get(.day) {
+        if now.get(.day) != self.lastUpdateTime.get(.day) && self.steps > 0 {
             self.distance = 0
             self.steps = 0
             self.walkingSeconds = 0
@@ -43,7 +43,7 @@ class Workout: ObservableObject {
         let distanceDiff = newState.distance - (oldState?.distance ?? 0)
         let walkingTimeDiff = newState.walkingTimeSeconds - ( oldState?.walkingTimeSeconds ?? 0)
         
-        if (self.steps > 0 && oldState == nil) {
+        if ((self.steps > 0 && oldState == nil) || stepDiff < 0 || distanceDiff < 0) {
             return
         }
         if (oldState != nil && oldState?.speed != newState.speed) {
@@ -52,7 +52,7 @@ class Workout: ObservableObject {
         
         print("adding steps=\(stepDiff) distance=\(distanceDiff)")
         
-        if (steps > 0 && newState.statusType == .currentStatus) {
+        if (self.steps > 0 && newState.statusType == .currentStatus) {
             let change = Change(
                 oldTime: self.lastUpdateTime,
                 newTime: newState.time,

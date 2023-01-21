@@ -150,6 +150,10 @@ class GoogleFitFacade {
             print("skipping upload, I am not logged in")
             return
         }
+        if (start.formatted(date: .complete, time: .omitted) != end.formatted(date: .complete, time: .omitted)) {
+            print("start date does not match end date")
+            return
+        }
         
         let startTimeNanos = UInt64(start.timeIntervalSince1970 * 1000 * 1000 * 1000) + 1
         let endTimeNanos = UInt64(end.timeIntervalSince1970 * 1000 * 1000 * 1000) - 1

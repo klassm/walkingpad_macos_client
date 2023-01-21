@@ -32,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         super.init()
         
         self.updateTimer = RepeatingTimer(interval: 5, eventHandler: {
+            self.workout.resetIfDateChanged()
             self.walkingPadService.command()?.updateStatus()
         })
         
