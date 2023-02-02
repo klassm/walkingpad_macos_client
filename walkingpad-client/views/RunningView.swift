@@ -16,7 +16,7 @@ struct RunningView: View {
             }) {
                 Text(String(format: "%.1f", Float(speed) / 10.0))
             }
-            .background(speedLevel == speed ? Color.blue : Color.secondary)
+            .background(speedLevel == speed ? Color.accentColor : Color.clear)
             .foregroundColor(speedLevel == speed ? Color.white : Color.black)
             .cornerRadius(5)
         }
@@ -25,7 +25,7 @@ struct RunningView: View {
             Button(action: { self.walkingPadService.command()?.setWalkingMode(mode: mode)}) {
                 Text(mode == .manual ? "Manual" : "Automatic")
             }
-            .background(mode == state?.walkingMode ? Color.blue : Color.secondary)
+            .background(mode == state?.walkingMode ? Color.accentColor : Color.clear)
             .foregroundColor(mode == state?.walkingMode ? Color.white : Color.black)
             .cornerRadius(5)
         }
