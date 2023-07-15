@@ -30,6 +30,10 @@ class StepsUploader {
         self.googleFitFacade.uploadStepData(start: startTime, end: now, steps: self.accumulatedSteps)
         self.googleFitFacade.createWorkoutSession(start: startTime, end: now)
         
+        self.reset()
+    }
+    
+    func reset() {
         self.startTime = nil
         self.accumulatedSteps = 0
     }

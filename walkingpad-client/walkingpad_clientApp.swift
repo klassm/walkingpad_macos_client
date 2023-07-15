@@ -57,6 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSLog("Reveived sleep notification, stopping timer");
         self.updateTimer?.stop();
         self.mqttService.stop()
+        self.stepsUploader.reset()
     }
 
     @objc func receiveWakeNotification(sender: AnyObject){
@@ -64,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.bluetoothDiscoverService.start()
         self.updateTimer?.start()
         self.mqttService.start()
+        self.stepsUploader.reset()
     
     }
     

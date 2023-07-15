@@ -4,6 +4,7 @@
 # Usage example: ./carthage.sh build --platform iOS
 
 set -euo pipefail
+find Carthage -type f -name '*.pbxproj' -exec sed -i '' '/MACOSX_DEPLOYMENT_TARGET/d' {} +
 
 xcconfig=$(mktemp /tmp/static.xcconfig.XXXXXX)
 trap 'rm -f "$xcconfig"' INT TERM HUP EXIT
