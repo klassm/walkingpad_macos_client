@@ -8,6 +8,12 @@ struct WorkoutApiData: Codable {
     var date: String
 }
 
+struct TreadmillState : Codable {
+    var steps: Int
+    var distance: Int
+    var walkingSeconds: Int
+}
+
 func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
     let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
     let dateFormatter = DateFormatter()
@@ -94,28 +100,40 @@ func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
         
         
         let handleGet = { () in
-            
-            if (path == "/treadmill/workouts") {
-                let jsonEncoder = JSONEncoder()
-                do {
-                    let workouts = workout.loadAll()
-                    let toEncode = workouts.map{WorkoutApiData(
-                        steps: $0.steps,
-                        distance: $0.distance,
-                        walkingSeconds: $0.walkingSeconds,
-                        date: dateFormatter.string(from: $0.date)
-                    )}
+            do {
+                if (path == "/treadmill/workouts") {
+                    let jsonEncoder = JSONEncoder()
+
+                        let workouts = workout.loadAll()
+                        let toEncode = workouts.map{WorkoutApiData(
+                            steps: $0.steps,
+                            distance: $0.distance,
+                            walkingSeconds: $0.walkingSeconds,
+                            date: dateFormatter.string(from: $0.date)
+                        )}
+                        let json = try jsonEncoder.encode(toEncode)
+                        startResponse("200 OK", [("content-type", "application/json"), ("access-control-allow-origin", "*")])
+                        sendBody(json)
+                        sendBody(Data())
+
+                    return
+                } else if (path == "/treadmill") {
+                    let jsonEncoder = JSONEncoder()
+                    let toEncode = TreadmillState(
+                        steps: workout.steps,
+                        distance: workout.distance,
+                        walkingSeconds: workout.walkingSeconds
+                    )
                     let json = try jsonEncoder.encode(toEncode)
                     startResponse("200 OK", [("content-type", "application/json"), ("access-control-allow-origin", "*")])
                     sendBody(json)
                     sendBody(Data())
-                } catch {
-                    sendStatus(500, "Error")
+                } else {
+                    sendStatus(404, "Not found")
                 }
-                return
+            } catch {
+                sendStatus(500, "Error")
             }
-          
-            sendStatus(404, "Not found")
         }
         
         let method = environ["REQUEST_METHOD"] as? String
