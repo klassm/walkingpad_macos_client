@@ -12,6 +12,7 @@ struct TreadmillState : Codable {
     var steps: Int
     var distance: Int
     var walkingSeconds: Int
+    var speed: Double
 }
 
 func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
@@ -122,7 +123,8 @@ func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
                     let toEncode = TreadmillState(
                         steps: workout.steps,
                         distance: workout.distance,
-                        walkingSeconds: workout.walkingSeconds
+                        walkingSeconds: workout.walkingSeconds,
+                        speed: walkingPadService.lastStatus()?.speedKmh() ?? 0
                     )
                     let json = try jsonEncoder.encode(toEncode)
                     startResponse("200 OK", [("content-type", "application/json"), ("access-control-allow-origin", "*")])
