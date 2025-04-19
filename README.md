@@ -8,9 +8,9 @@ A native MacOS Client (as status bar app) to watch your steps.
 * Connect to your treadmill via Bluetooth
 * Watch your steps, the app will accumulate the steps
 * You can change the speed directly in the app
-* GoogleFit support - connect the app to your Google Fit account. Whenever you pause or stop the treadmill, the steps will be uploaded to Google Fit.
+* Health COnnect support - connect the app to Health Connect on your phone. Whenever you pause or stop the treadmill, the steps will be uploaded to HealthConnect.
 * Statistics - the app will remember the times you walked before and give you some statistics on how much you have walked in the past
-* [Alfred](https://www.alfredapp.com/) Workflow to control your treadmill by keystroke. You can download the workflow [here](https://github.com/klassm/walkingpad_alfred/releases)
+* [Raycast](https://www.raycast.com/) Workflow to control your treadmill by keystroke. You can download the workflow [here](https://github.com/klassm/raycast-walkingpad)
 * Publish the WalkingPad state as MQTT message (>= 0.0.3)
 
 ### Installation
@@ -74,6 +74,14 @@ mqtt:
 ![Tray App](docs/tray_app.png)
 ![Stats](docs/stats.png)
 
+
+### HealthConnect
+
+With Google Fit [shutting down](https://spikeapi.com/google-fit-shutdown-what-developers-need-to-know-and-how-to-prepare/) in June 2025, the direct Google Fit integration in the app is no longer feasible.
+
+HealthConnect is running directly on your phone, without the ability for external access. To bridge this gap, ShuchirJ invented the [HCGateway](https://github.com/ShuchirJ/HCGateway), which basically syncs data from HealthConnect to a server, which then has an API to talk to.
+
+Beware: The data will be synced to an external server where you will have no control over your data.
 
 ### Credits
 
