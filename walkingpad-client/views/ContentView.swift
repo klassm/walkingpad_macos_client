@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var walkingPadService: WalkingPadService
     @EnvironmentObject var workout: Workout
-    @EnvironmentObject var googleOAuth: GoogleOAuth
     
     
     var body: some View {

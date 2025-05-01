@@ -1,5 +1,5 @@
-github "daltoniam/Starscream" "3.1.1"
-github "emqx/CocoaMQTT" "367d53e9118ccbec642c0eb0721ecc7cdfb692f4"
+github "daltoniam/Starscream" "4.0.8"
+github "emqx/CocoaMQTT" "22b98acc75bdca77917a1093bd3e1b45ef6e9718"
 github "envoy/Embassy" "v4.1.6"
 github "leeway1208/MqttCocoaAsyncSocket" "1.0.8"
 github "p2/OAuth2" "4.2.0"

@@ -1,5 +1,4 @@
 import SwiftUI
-import OAuth2
 
 @main
 struct MenuBarPopoverApp: App {
@@ -15,10 +14,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var workout = Workout()
     private var walkingPadService: WalkingPadService
     private var bluetoothDiscoverService: BluetoothDiscoveryService
-    private var googleOAuth = GoogleOAuth()
     private var stepsUploader: StepsUploader
     private var updateTimer: RepeatingTimer? = nil;
     private var mqttService: MqttService
+    private var hcGatewayService: HCGatewayService
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
@@ -26,8 +25,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     override init() {
         self.walkingPadService = WalkingPadService()
         self.bluetoothDiscoverService = BluetoothDiscoveryService(walkingPadService)
-        self.stepsUploader = StepsUploader(googleFitFacade: GoogleFitFacade(self.googleOAuth))
         self.mqttService = MqttService(FileSystem())
+        
+        // Initialize HCGatewayService on the main actor
+        self.hcGatewayService = HCGatewayService()
+        self.stepsUploader = StepsUploader(hcGatewayService: self.hcGatewayService)
         
         super.init()
         
@@ -77,7 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let view = NSHostingView(rootView: ContentView()
                                     .environmentObject(workout)
                                     .environmentObject(walkingPadService)
-                                    .environmentObject(googleOAuth))
+                                    .environmentObject(hcGatewayService))
         let menuItem = NSMenuItem()
         menuItem.view = view
         view.frame = NSRect(x: 0, y: 0, width: 200, height: 250)
@@ -91,34 +93,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = NSImage(named: "StatusIcon")
             button.image?.isTemplate = true
         }
+        
+        Task {
+            await self.hcGatewayService.initialize()
+        }
     }
     
     @objc func update() {
         self.walkingPadService.command()?.updateStatus()
-    }
-    
-    // register our app to get notified when launched via URL
-    func applicationWillFinishLaunching(_ notification: Notification) {
-        NSAppleEventManager.shared().setEventHandler(
-            self,
-            andSelector: #selector(AppDelegate.handleURLEvent(_:withReply:)),
-            forEventClass: AEEventClass(kInternetEventClass),
-            andEventID: AEEventID(kAEGetURL)
-        )
-    }
-    
-    /** Gets called when the App launches/opens via URL. */
-    @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
-            if let url = URLComponents(string: urlString), urlString.contains("/oauth") && urlString.contains("code=") {
-                if let code = url.queryItems?.first(where: { $0.name == "code" })?.value {
-                    googleOAuth.exchangeCodeForToken(code)
-                    print("received calback with \(code)")
-                }
-            }
-        }
-        else {
-            NSLog("No valid URL to handle")
-        }
     }
 }

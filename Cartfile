@@ -1,3 +1,4 @@
-github "envoy/Embassy" ~> 4.1
-github "p2/OAuth2" ~> 4.2
-github "emqx/CocoaMQTT" "master"
+platform :macos, '15.4'
+github "envoy/Embassy" ~> 4.1 --platform macos
+github "p2/OAuth2" ~> 4.2 --platform macos
+github "emqx/CocoaMQTT" "master" --platform macos
