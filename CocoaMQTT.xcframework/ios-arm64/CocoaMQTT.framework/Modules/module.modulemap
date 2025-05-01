@@ -1,0 +1,11 @@
+framework module CocoaMQTT {
+  umbrella header "CocoaMQTT.h"
+  export *
+
+  module * { export * }
+}
+
+module CocoaMQTT.Swift {
+  header "CocoaMQTT-Swift.h"
+  requires objc
+}

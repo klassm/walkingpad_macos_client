@@ -1,0 +1,4 @@
+framework module OAuth2 {
+  header "OAuth2-Swift.h"
+  requires objc
+}
