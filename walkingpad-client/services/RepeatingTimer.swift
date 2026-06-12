@@ -17,7 +17,7 @@ class RepeatingTimer {
         }
         
         NSLog("Starting timer");
-        let newTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true) { _ in
+        let newTimer = Timer.scheduledTimer(withTimeInterval: self.interval, repeats: true) { _ in
             self.eventHandler()
         }
         RunLoop.main.add(newTimer, forMode: .common)

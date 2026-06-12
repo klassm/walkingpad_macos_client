@@ -24,8 +24,16 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
         print("Initialized walking pad connection to \(connection.peripheral.name ?? "unknown")")
     }
     
+    public func restoreConnection(_ peripheral: CBPeripheral) {
+        guard let conn = connection else { return }
+        conn.peripheral.delegate = self
+        peripheral.setNotifyValue(true, for: conn.notifyCharacteristic)
+        print("Restored walking pad connection to \(peripheral.name ?? "unknown")")
+    }
+
     public func onDisconnect() {
         print("WalkingPad device disconnected, setting state to nil")
+        self.connection = nil
         self.notifyZeroSpeed()
         self.lastState = nil
     }
@@ -45,6 +53,10 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
         ))
     }
     
+    public var activeConnection: WalkingPadConnection? {
+        return connection
+    }
+
     public func isCurrentDevice(peripheral: CBPeripheral) -> Bool {
         return peripheral == self.connection?.peripheral
     }
