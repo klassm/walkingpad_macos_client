@@ -17,7 +17,7 @@ struct RunningView: View {
                 Text(String(format: "%.1f", Float(speed) / 10.0))
             }
             .background(speedLevel == speed ? Color.accentColor : Color.clear)
-            .foregroundColor(speedLevel == speed ? Color.white : Color.black)
+            .foregroundColor(speedLevel == speed ? Color.white : Color.primary)
             .cornerRadius(5)
         }
         
@@ -26,7 +26,7 @@ struct RunningView: View {
                 Text(mode == .manual ? "Manual" : "Automatic")
             }
             .background(mode == state?.walkingMode ? Color.accentColor : Color.clear)
-            .foregroundColor(mode == state?.walkingMode ? Color.white : Color.black)
+            .foregroundColor(mode == state?.walkingMode ? Color.white : Color.primary)
             .cornerRadius(5)
         }
         
