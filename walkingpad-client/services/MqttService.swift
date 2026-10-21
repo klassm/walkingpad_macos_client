@@ -46,18 +46,18 @@ class MqttService {
         )
         
         client.connect().flatMap { _ -> EventLoopFuture<Void> in
-            print("MQTT connected successfully")
+            NSLog("MQTT connected successfully")
             self.client = client
             _ = self.subscribeToTopics(config: config)
             return self.eventLoopGroup.next().makeSucceededFuture(())
         }.whenComplete { result in
             switch result {
             case .success:
-                print("MQTT connected successfully")
+                NSLog("MQTT connected successfully")
                 self.client = client
                 self.subscribeToTopics(config: config)
             case .failure(let error):
-                print("MQTT connection failed: \(error)")
+                NSLog("MQTT connection failed: %@", String(describing: error))
             }
         }
     }
@@ -82,7 +82,7 @@ class MqttService {
             let decoded = try jsonDecoder.decode(MqttConfiguration.self, from: mqttConfigRaw)
             return decoded
         } catch {
-            print("error while decoding data source json, \(error)")
+            NSLog("error while decoding mqtt config json: %@", String(describing: error))
             return nil
         }
     }
@@ -116,7 +116,7 @@ class MqttService {
             ))
             
             let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
-            print("Publishing MQTT data: \(jsonString)")
+            NSLog("Publishing MQTT data: %@", jsonString)
             
             client.publish(
                 .string(jsonString),
@@ -126,7 +126,7 @@ class MqttService {
             
             self.lastMessageTime = Date()
         } catch {
-            print("error while encoding mqtt data, \(error)")
+            NSLog("error while encoding mqtt data: %@", String(describing: error))
         }
     }
     

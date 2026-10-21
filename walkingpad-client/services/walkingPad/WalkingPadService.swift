@@ -21,18 +21,18 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
         self.connection = connection
         self.connection?.peripheral.delegate = self
         connection.peripheral.setNotifyValue(true, for: connection.notifyCharacteristic)
-        print("Initialized walking pad connection to \(connection.peripheral.name ?? "unknown")")
+        NSLog("Initialized walking pad connection to %@", connection.peripheral.name ?? "unknown")
     }
     
     public func restoreConnection(_ peripheral: CBPeripheral) {
         guard let conn = connection else { return }
         conn.peripheral.delegate = self
         peripheral.setNotifyValue(true, for: conn.notifyCharacteristic)
-        print("Restored walking pad connection to \(peripheral.name ?? "unknown")")
+        NSLog("Restored walking pad connection to %@", peripheral.name ?? "unknown")
     }
 
     public func onDisconnect() {
-        print("WalkingPad device disconnected, setting state to nil")
+        NSLog("WalkingPad device disconnected, setting state to nil")
         self.connection = nil
         self.notifyZeroSpeed()
         self.lastState = nil
@@ -40,7 +40,7 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
     
     private func notifyZeroSpeed() {
         guard let state = self.lastState else { return }
-        print("Notifying with zero speed.")
+        NSLog("Notifying with zero speed.")
         self.callback?(state, DeviceState(
             time: Date(),
             walkingTimeSeconds: state.walkingTimeSeconds,
@@ -93,7 +93,7 @@ open class WalkingPadService: NSObject, CBPeripheralDelegate, ObservableObject {
             guard let connection = self.connection else { return }
             
             if (byteArray.count < 13) {
-                print("Unknown status array length")
+                NSLog("Unknown status array length: %d", byteArray.count)
                 return
             }
             

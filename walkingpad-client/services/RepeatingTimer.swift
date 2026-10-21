@@ -1,6 +1,8 @@
 import Foundation
 
-class RepeatingTimer {
+// Timer callbacks fire on the main run loop and the timer is only ever
+// started/stopped from the main thread, so shared state is main-thread bound.
+final class RepeatingTimer: @unchecked Sendable {
     private var interval: TimeInterval;
     private var eventHandler: () -> Void;
     private var timer: Timer? = nil

@@ -5,7 +5,7 @@ struct MenuBarPopoverApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     var body: some Scene {
         Settings {
-            EmptyView()
+            SettingsView()
         }
     }
 }
@@ -14,10 +14,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var workout = Workout()
     private var walkingPadService: WalkingPadService
     private var bluetoothDiscoverService: BluetoothDiscoveryService
-    private var stepsUploader: StepsUploader
     private var updateTimer: RepeatingTimer? = nil;
     private var mqttService: MqttService
-    private var hcGatewayService: HCGatewayService
+    private var httpApi: HttpApi?
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
@@ -25,11 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.walkingPadService = WalkingPadService()
         self.bluetoothDiscoverService = BluetoothDiscoveryService(walkingPadService)
         self.mqttService = MqttService(FileSystem())
-        
-        // Initialize HCGatewayService on the main actor
-        self.hcGatewayService = HCGatewayService()
-        self.stepsUploader = StepsUploader(hcGatewayService: self.hcGatewayService)
-        
+
         super.init()
         
         self.updateTimer = RepeatingTimer(interval: 5, eventHandler: {
@@ -37,11 +32,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.walkingPadService.command()?.updateStatus()
         })
         
-        workout.onChangeCallback = {
-            change in DispatchQueue.global(qos: .userInitiated).async {
-                self.stepsUploader.handleChange(change)
-            }
-        }
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
             self.mqttService.publish(oldState: oldState, newState: newState, workoutState: self.workout.workoutState())
@@ -70,10 +60,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func receiveSleepNotification(sender: AnyObject){
         NSLog("Received sleep notification, pausing services");
+        self.workout.save()
         bluetoothDiscoverService.setSleeping(true)
         self.updateTimer?.stop();
         self.mqttService.stop()
-        self.stepsUploader.reset()
     }
 
     @objc func receiveWakeNotification(sender: AnyObject) {
@@ -116,19 +106,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.mqttService.start()
         self.updateTimer?.start()
 
-        self.stepsUploader.reset()
         self.workout.resetIfDateChanged()
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         DispatchQueue.global(qos: .userInitiated).async {
-            startHttpServer(walkingPadService: self.walkingPadService, workout: self.workout)
+            self.httpApi = startHttpServer(walkingPadService: self.walkingPadService, workout: self.workout)
         }
         
         let contentView = ContentView()
             .environmentObject(workout)
             .environmentObject(walkingPadService)
-            .environmentObject(hcGatewayService)
         
         self.popover = NSPopover()
         self.popover.contentSize = NSSize(width: 200, height: 250)
@@ -141,11 +129,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image?.isTemplate = true
             button.action = #selector(togglePopover)
             button.target = self
+            button.setAccessibilityLabel("WalkingPad status and controls")
+            button.toolTip = "WalkingPad"
         }
-        
-        Task {
-            await self.hcGatewayService.initialize()
-        }
+    }
+    
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        NSLog("Application terminating, saving workout");
+        self.workout.save()
+        return .terminateNow
     }
     
     @objc func togglePopover() {

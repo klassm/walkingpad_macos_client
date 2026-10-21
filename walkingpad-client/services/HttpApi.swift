@@ -1,5 +1,6 @@
 import Foundation
-import Embassy
+import Network
+import os
 
 struct WorkoutApiData: Codable {
     var steps: Int
@@ -15,142 +16,248 @@ struct TreadmillState : Codable {
     var speed: Double
 }
 
-func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) {
-    let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    let server = DefaultHTTPServer(eventLoop: loop, port: 4934) {
-        (
-            environ: [String: Any],
-            startResponse: @escaping ((String, [(String, String)]) -> Void),
-            sendBody: @escaping ((Data) -> Void)
-        ) in
-        let path = environ["PATH_INFO"] as! String
-        
-        let sendStatus = { (status: Int, statusText: String) in
-            startResponse("\(status) \(statusText)", [])
-            sendBody(Data())
+struct HttpResponse {
+    let status: Int
+    let reason: String
+    let headers: [(String, String)]
+    let body: Data
+
+    static func json(_ status: Int, _ reason: String, _ data: Data) -> HttpResponse {
+        HttpResponse(status: status, reason: reason, headers: [("content-type", "application/json"), ("access-control-allow-origin", "*")], body: data)
+    }
+
+    static func empty(_ status: Int, _ reason: String) -> HttpResponse {
+        HttpResponse(status: status, reason: reason, headers: [], body: Data())
+    }
+
+    func serialized() -> Data {
+        var head = "HTTP/1.1 \(status) \(reason)\r\n"
+        for (name, value) in headers {
+            head += "\(name): \(value)\r\n"
         }
+        head += "content-length: \(body.count)\r\nconnection: close\r\n\r\n"
+        var data = Data(head.utf8)
+        data.append(body)
+        return data
+    }
+}
+
+private struct ParsedHttpRequest {
+    let method: String
+    let path: String
+    let totalLength: Int
+}
+
+// Small JSON API on port 4934, backed by Network.framework (replaces Embassy).
+final class HttpApi {
+    private static let logger = Logger(subsystem: "klassm.walkingpad-client", category: "http")
+    private static let port: NWEndpoint.Port = 4934
+    
+    private let walkingPadService: WalkingPadService
+    private let workout: Workout
+    private let listener: NWListener
+    private let dateFormatter: DateFormatter
+    
+    init(walkingPadService: WalkingPadService, workout: Workout) throws {
+        self.walkingPadService = walkingPadService
+        self.workout = workout
+        self.dateFormatter = DateFormatter()
+        self.dateFormatter.dateFormat = "yyyy-MM-dd"
         
-        let sendSuccess = { () in
-            sendStatus(200, "OK")
+        let parameters = NWParameters.tcp
+        parameters.allowLocalEndpointReuse = true
+        self.listener = try NWListener(using: parameters, on: Self.port)
+    }
+    
+    func start() {
+        listener.newConnectionHandler = { [weak self] connection in
+            guard let self else { return }
+            connection.stateUpdateHandler = { state in
+                switch state {
+                case .ready:
+                    Self.logger.notice("HTTP connection ready")
+                case .waiting(let error):
+                    Self.logger.warning("HTTP connection waiting: \(String(describing: error), privacy: .public)")
+                case .failed(let error):
+                    Self.logger.error("HTTP connection failed: \(String(describing: error), privacy: .public)")
+                default:
+                    break
+                }
+            }
+            connection.start(queue: DispatchQueue(label: "walkingpad.http.connection", target: .global()))
+            self.receive(on: connection)
         }
-        
-        
-        let handlePost = { () in
-            guard let command = walkingPadService.command() else {
-                sendStatus(428, "Treadmill not connected")
+        listener.stateUpdateHandler = { state in
+            switch state {
+            case .ready:
+                Self.logger.notice("HTTP server ready on port \(Self.port.rawValue)")
+            case .waiting(let error):
+                Self.logger.warning("HTTP server waiting: \(String(describing: error), privacy: .public)")
+            case .failed(let error):
+                Self.logger.error("HTTP server failed: \(String(describing: error), privacy: .public)")
+            default:
+                break
+            }
+        }
+        listener.start(queue: DispatchQueue(label: "walkingpad.http.listener", target: .global()))
+    }
+    
+    func stop() {
+        listener.cancel()
+    }
+    
+    private func receive(on connection: NWConnection, buffer: Data = Data()) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+            if let error {
+                Self.logger.error("HTTP receive error: \(String(describing: error), privacy: .public)")
+            }
+            guard let self, error == nil else {
+                connection.cancel()
                 return
             }
-
-            if (path == "/treadmill/stop") {
-                command.setSpeed(speed: 0)
-                sendSuccess()
-                return
+            var buffer = buffer
+            if let data {
+                buffer.append(data)
             }
-
-            if (path == "/treadmill/start") {
-                command.start()
-                sendSuccess()
-                return
-            }
-
-            
-            if (path == "/treadmill/faster") {
-                let speed = walkingPadService.lastStatus()?.speed
-                if (speed == nil) {
-                    command.start()
+            guard let request = Self.parseRequest(from: buffer) else {
+                if isComplete || buffer.count > 1_000_000 {
+                    Self.logger.warning("HTTP incomplete request, closing connection")
+                    connection.cancel()
                 } else {
-                    command.setSpeed(speed: UInt8((speed ?? 0) + 5))
+                    self.receive(on: connection, buffer: buffer)
                 }
-                sendSuccess()
                 return
             }
-
-            
-            if (path == "/treadmill/slower") {
-                let speed = walkingPadService.lastStatus()?.speed
-                if (speed == nil) {
-                    command.setSpeed(speed: 0)
+            Self.logger.notice("HTTP request: \(request.method, privacy: .public) \(request.path, privacy: .public)")
+            let response = self.handle(method: request.method, path: request.path)
+            connection.send(content: response.serialized(), completion: .contentProcessed { sendError in
+                if let sendError {
+                    Self.logger.error("HTTP send error: \(String(describing: sendError), privacy: .public)")
                 } else {
-                    command.setSpeed(speed: UInt8((speed ?? 0) - 5))
+                    Self.logger.notice("HTTP response sent: \(response.status)")
                 }
-                sendSuccess()
-                return
-            }
-
-            
-            if (path.hasPrefix("/treadmill/speed/")) {
-                let speedRegex = try! NSRegularExpression(pattern: "/treadmill/speed/([1-8]0)")
-                guard let match = speedRegex.firstMatch(in: path, options: [], range: NSRange(path.startIndex..., in: path)) else {
-                    sendStatus(404, "Not found")
-                    return
-                }
-
-                let range = Range(match.range(at: 1), in: path)!
-                let speedMatch = path[range]
-                let speed = UInt8(speedMatch)!
-                command.setSpeed(speed: speed)
-
-                sendSuccess()
-                return
-            }
-
-            sendStatus(404, "Not found")
-        }
-        
-        
-        let handleGet = { () in
-            do {
-                if (path == "/treadmill/workouts") {
-                    let jsonEncoder = JSONEncoder()
-
-                        let workouts = workout.loadAll()
-                        let toEncode = workouts.map{WorkoutApiData(
-                            steps: $0.steps,
-                            distance: $0.distance,
-                            walkingSeconds: $0.walkingSeconds,
-                            date: dateFormatter.string(from: $0.date)
-                        )}
-                        let json = try jsonEncoder.encode(toEncode)
-                        startResponse("200 OK", [("content-type", "application/json"), ("access-control-allow-origin", "*")])
-                        sendBody(json)
-                        sendBody(Data())
-
-                    return
-                } else if (path == "/treadmill") {
-                    let jsonEncoder = JSONEncoder()
-                    let toEncode = TreadmillState(
-                        steps: workout.steps,
-                        distance: workout.distance,
-                        walkingSeconds: workout.walkingSeconds,
-                        speed: walkingPadService.lastStatus()?.speedKmh() ?? 0
-                    )
-                    let json = try jsonEncoder.encode(toEncode)
-                    startResponse("200 OK", [("content-type", "application/json"), ("access-control-allow-origin", "*")])
-                    sendBody(json)
-                    sendBody(Data())
-                } else {
-                    sendStatus(404, "Not found")
-                }
-            } catch {
-                sendStatus(500, "Error")
-            }
-        }
-        
-        let method = environ["REQUEST_METHOD"] as? String
-        if method == "POST"  {
-            handlePost()
-        } else if method == "GET" {
-            handleGet()
-        } else {
-            sendStatus(404, "Not found")
+                connection.cancel()
+            })
         }
     }
 
-    // Start HTTP server to listen on the port
-    try! server.start()
+    private static func parseRequest(from data: Data) -> ParsedHttpRequest? {
+        guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
+            return nil
+        }
+        guard let headerText = String(data: data[..<headerEnd.lowerBound], encoding: .utf8) else {
+            return nil
+        }
+        let lines = headerText.split(separator: "\r\n", omittingEmptySubsequences: false)
+        guard let requestLine = lines.first else {
+            return nil
+        }
+        let parts = requestLine.split(separator: " ")
+        guard parts.count >= 2 else {
+            return nil
+        }
+        var contentLength = 0
+        for line in lines.dropFirst() {
+            let pieces = line.split(separator: ":", maxSplits: 1)
+            if pieces.count == 2, pieces[0].lowercased() == "content-length",
+               let length = Int(pieces[1].trimmingCharacters(in: .whitespaces)) {
+                contentLength = length
+            }
+        }
+        let totalLength = headerEnd.upperBound + contentLength
+        guard data.count >= totalLength else {
+            return nil
+        }
+        return ParsedHttpRequest(method: String(parts[0]), path: String(parts[1]), totalLength: totalLength)
+    }
+    
+    private func handle(method: String, path: String) -> HttpResponse {
+        switch (method, path) {
+        case ("GET", "/treadmill"):
+            return self.treadmillState()
+        case ("GET", "/treadmill/workouts"):
+            return self.workouts()
+        case ("POST", "/treadmill/start"):
+            return self.withCommand { $0.start() }
+        case ("POST", "/treadmill/stop"):
+            return self.withCommand { $0.setSpeed(speed: 0) }
+        case ("POST", "/treadmill/faster"):
+            return self.withCommand { command in
+                if let speed = self.walkingPadService.lastStatus()?.speed {
+                    command.setSpeed(speed: UInt8(speed + 5))
+                } else {
+                    command.start()
+                }
+            }
+        case ("POST", "/treadmill/slower"):
+            return self.withCommand { command in
+                if let speed = self.walkingPadService.lastStatus()?.speed {
+                    command.setSpeed(speed: UInt8(speed - 5))
+                } else {
+                    command.setSpeed(speed: 0)
+                }
+            }
+        default:
+            if method == "POST", path.hasPrefix("/treadmill/speed/") {
+                let speedString = path.dropFirst("/treadmill/speed/".count)
+                if let speed = UInt8(speedString), speed >= 10, speed <= 80, speed % 10 == 0 {
+                    return self.withCommand { $0.setSpeed(speed: speed) }
+                }
+                return .empty(404, "Not found")
+            }
+            return .empty(404, "Not found")
+        }
+    }
+    
+    private func treadmillState() -> HttpResponse {
+        let state = TreadmillState(
+            steps: self.workout.steps,
+            distance: self.workout.distance,
+            walkingSeconds: self.workout.walkingSeconds,
+            speed: self.walkingPadService.lastStatus()?.speedKmh() ?? 0
+        )
+        do {
+            return .json(200, "OK", try JSONEncoder().encode(state))
+        } catch {
+            Self.logger.error("Failed to encode treadmill state: \(String(describing: error), privacy: .public)")
+            return .empty(500, "Error")
+        }
+    }
+    
+    private func workouts() -> HttpResponse {
+        let workouts = self.workout.loadAll().map { entry in
+            WorkoutApiData(
+                steps: entry.steps,
+                distance: entry.distance,
+                walkingSeconds: entry.walkingSeconds,
+                date: self.dateFormatter.string(from: entry.date)
+            )
+        }
+        do {
+            return .json(200, "OK", try JSONEncoder().encode(workouts))
+        } catch {
+            Self.logger.error("Failed to encode workouts: \(String(describing: error), privacy: .public)")
+            return .empty(500, "Error")
+        }
+    }
+    
+    private func withCommand(_ action: (WalkingPadCommand) -> Void) -> HttpResponse {
+        guard let command = self.walkingPadService.command() else {
+            return .empty(428, "Treadmill not connected")
+        }
+        action(command)
+        return .empty(200, "OK")
+    }
+}
 
-    // Run event loop
-    loop.runForever()
+@discardableResult
+func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) -> HttpApi? {
+    do {
+        let server = try HttpApi(walkingPadService: walkingPadService, workout: workout)
+        server.start()
+        return server
+    } catch {
+        Logger(subsystem: "klassm.walkingpad-client", category: "http").error("Failed to start HTTP server: \(String(describing: error), privacy: .public)")
+        return nil
+    }
 }

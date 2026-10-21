@@ -50,7 +50,7 @@ class Workout: ObservableObject {
             save()
         }
         
-        print("adding steps=\(stepDiff) distance=\(distanceDiff)")
+        NSLog("adding steps=%d distance=%d", stepDiff, distanceDiff)
         
         if (self.steps > 0 && newState.statusType == .currentStatus) {
             let change = Change(
@@ -74,14 +74,19 @@ class Workout: ObservableObject {
     public func save() {
         let workoutData = WorkoutSaveData(steps: self.steps, distance: self.distance, walkingSeconds: self.walkingSeconds, date: self.lastUpdateTime)
         let withoutToday = loadAll().filter { !Calendar.current.isDateInToday($0.date)}
-        let newData = withoutToday + [workoutData];
+        // Never regress today's numbers: keep whichever of the in-memory state and
+        // the best already-persisted entry for today is higher (guards against
+        // zero-shadow saves after reconnects/restarts).
+        let bestToday = loadAll().filter { Calendar.current.isDateInToday($0.date) }.max { $0.steps < $1.steps }
+        let entryToStore = bestToday != nil && bestToday!.steps > workoutData.steps ? bestToday! : workoutData
+        let newData = withoutToday + [entryToStore];
         
         let jsonEncoder = JSONEncoder()
         do {
             let json = try jsonEncoder.encode(WorkoutsSaveData(workouts: newData))
             FileSystem().save(filename: "workouts.json", data: json)
         } catch {
-            print("could not save")
+            NSLog("could not save workouts.json: %@", String(describing: error))
         }
     }
     
@@ -90,7 +95,9 @@ class Workout: ObservableObject {
             return
         }
         let workouts = loadAll()
-        let workout = workouts.first (where: { entry in Calendar.current.isDateInToday(entry.date) })
+        let workout = workouts
+            .filter { entry in Calendar.current.isDateInToday(entry.date) }
+            .max { $0.steps < $1.steps }
     
         if let foundWorkout = workout {
             self.steps = foundWorkout.steps
@@ -105,13 +112,30 @@ class Workout: ObservableObject {
         do {
             let optionalData = FileSystem().load(filename: "workouts.json")
             if let data = optionalData {
-                let workoutData = try jsonDecoder.decode(WorkoutsSaveData.self, from: data)
-                return workoutData.workouts.suffix(500)
+                return try decodeWorkouts(data, decoder: jsonDecoder).suffix(500)
             }
             return []
         } catch {
-            print("Could not load workout data \(error)")
+            NSLog("Could not load workout data %@", String(describing: error))
             return []
+        }
+    }
+    
+    // Tolerant decoding: a single broken entry (or trailing garbage) no longer
+    // discards the whole history — broken entries are skipped instead.
+    private func decodeWorkouts(_ data: Data, decoder: JSONDecoder) throws -> [WorkoutSaveData] {
+        do {
+            return try decoder.decode(WorkoutsSaveData.self, from: data).workouts
+        } catch {
+            NSLog("workouts.json is partially invalid, recovering individual entries")
+        }
+        guard let topLevel = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let entries = topLevel["workouts"] as? [[String: Any]] else {
+            throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "workouts.json has no workouts array"))
+        }
+        return entries.compactMap { entry in
+            guard let entryData = try? JSONSerialization.data(withJSONObject: entry) else { return nil }
+            return try? decoder.decode(WorkoutSaveData.self, from: entryData)
         }
     }
     

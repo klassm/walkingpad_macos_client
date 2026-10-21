@@ -13,7 +13,6 @@ struct FooterView: View {
             }) {
                 Text("Stats")
             }
-            LoginLogoutButton()
             Button(action: {
                 walkingPadService.command()?.setSpeed(speed: 0)
                 workout.save()

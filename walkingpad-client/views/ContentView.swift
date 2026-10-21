@@ -15,8 +15,10 @@ struct ContentView: View {
             }
             
             Spacer()
-        
-  
+
+            HistoryView()
+                .padding(.top, 4)
+
             FooterView()
         }.padding(10)
     }
