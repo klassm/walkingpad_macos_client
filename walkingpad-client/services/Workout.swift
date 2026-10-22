@@ -21,6 +21,8 @@ class Workout: ObservableObject {
     
     public var lastUpdateTime: Date = Date()
     
+    private var lastSaveTime: Date = .distantPast
+    
     public var onChangeCallback: OnChangeCallback =  {_ in }
     
     init() {
@@ -30,6 +32,9 @@ class Workout: ObservableObject {
     public func resetIfDateChanged() {
         let now = Date()
         if now.get(.day) != self.lastUpdateTime.get(.day) && self.steps > 0 {
+            // Persist the previous day's final numbers before zeroing the
+            // counters, otherwise a day that ended without a save is lost.
+            self.save()
             self.distance = 0
             self.steps = 0
             self.walkingSeconds = 0
@@ -42,13 +47,18 @@ class Workout: ObservableObject {
         let stepDiff = newState.steps - (oldState?.steps ?? 0)
         let distanceDiff = newState.distance - (oldState?.distance ?? 0)
         let walkingTimeDiff = newState.walkingTimeSeconds - ( oldState?.walkingTimeSeconds ?? 0)
-        
+
+        // A walk that ends by disconnecting (speed drops to 0, device counters
+        // reset) produces a negative stepDiff and would otherwise be skipped
+        // by the guard below without ever being persisted.
+        if self.steps > 0, oldState?.speed != newState.speed, newState.speed == 0 {
+            save()
+            return
+        }
         if ((self.steps > 0 && oldState == nil) || stepDiff < 0 || distanceDiff < 0) {
             return
         }
-        if (oldState != nil && oldState?.speed != newState.speed) {
-            save()
-        }
+        let speedChanged = oldState != nil && oldState?.speed != newState.speed
         
         NSLog("adding steps=%d distance=%d", stepDiff, distanceDiff)
         
@@ -68,12 +78,22 @@ class Workout: ObservableObject {
         self.walkingSeconds = self.walkingSeconds + walkingTimeDiff
         self.lastUpdateTime = newState.time
         
+        // Persist after the counters are updated so the saved entry always
+        // includes the newest numbers. Save immediately whenever the speed
+        // changes (e.g. end of a walk) and otherwise at most every 5 minutes
+        // so a steady walk is recorded while it is still ongoing.
+        if (speedChanged || (self.steps > 0 && Date().timeIntervalSince(self.lastSaveTime) >= 300)) {
+            save()
+        }
     }
     
     
     public func save() {
+        self.lastSaveTime = Date()
         let workoutData = WorkoutSaveData(steps: self.steps, distance: self.distance, walkingSeconds: self.walkingSeconds, date: self.lastUpdateTime)
-        let withoutToday = loadAll().filter { !Calendar.current.isDateInToday($0.date)}
+        // Drop pointless zero-step entries (legacy files contain zero-shadow
+        // entries that overwrite real walks downstream).
+        let withoutToday = loadAll().filter { $0.steps > 0 && !Calendar.current.isDateInToday($0.date)}
         // Never regress today's numbers: keep whichever of the in-memory state and
         // the best already-persisted entry for today is higher (guards against
         // zero-shadow saves after reconnects/restarts).

@@ -7,6 +7,7 @@ struct WorkoutApiData: Codable {
     var distance: Int
     var walkingSeconds: Int
     var date: String
+    var dateIso: String
 }
 
 struct TreadmillState : Codable {
@@ -14,6 +15,10 @@ struct TreadmillState : Codable {
     var distance: Int
     var walkingSeconds: Int
     var speed: Double
+}
+
+struct ConnectionState : Codable {
+    var state: String
 }
 
 struct HttpResponse {
@@ -175,6 +180,8 @@ final class HttpApi {
         switch (method, path) {
         case ("GET", "/treadmill"):
             return self.treadmillState()
+        case ("GET", "/treadmill/connection"):
+            return self.connectionState()
         case ("GET", "/treadmill/workouts"):
             return self.workouts()
         case ("POST", "/treadmill/start"):
@@ -224,13 +231,31 @@ final class HttpApi {
         }
     }
     
+    private func connectionState() -> HttpResponse {
+        let state: String
+        if !self.walkingPadService.isConnected() {
+            state = "disconnected"
+        } else if (self.walkingPadService.lastStatus()?.speed ?? 0) > 0 {
+            state = "running"
+        } else {
+            state = "idle"
+        }
+        do {
+            return .json(200, "OK", try JSONEncoder().encode(ConnectionState(state: state)))
+        } catch {
+            Self.logger.error("Failed to encode connection state: \(String(describing: error), privacy: .public)")
+            return .empty(500, "Error")
+        }
+    }
+    
     private func workouts() -> HttpResponse {
         let workouts = self.workout.loadAll().map { entry in
             WorkoutApiData(
                 steps: entry.steps,
                 distance: entry.distance,
                 walkingSeconds: entry.walkingSeconds,
-                date: self.dateFormatter.string(from: entry.date)
+                date: self.dateFormatter.string(from: entry.date),
+                dateIso: Self.isoDateFormatter.string(from: entry.date)
             )
         }
         do {
@@ -240,6 +265,12 @@ final class HttpApi {
             return .empty(500, "Error")
         }
     }
+    
+    private static let isoDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
     
     private func withCommand(_ action: (WalkingPadCommand) -> Void) -> HttpResponse {
         guard let command = self.walkingPadService.command() else {
