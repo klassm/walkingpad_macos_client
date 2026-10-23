@@ -7,7 +7,6 @@ struct WorkoutApiData: Codable {
     var distance: Int
     var walkingSeconds: Int
     var date: String
-    var dateIso: String
 }
 
 struct TreadmillState : Codable {
@@ -254,8 +253,7 @@ final class HttpApi {
                 steps: entry.steps,
                 distance: entry.distance,
                 walkingSeconds: entry.walkingSeconds,
-                date: self.dateFormatter.string(from: entry.date),
-                dateIso: Self.isoDateFormatter.string(from: entry.date)
+                date: self.dateFormatter.string(from: entry.date)
             )
         }
         do {
@@ -265,12 +263,6 @@ final class HttpApi {
             return .empty(500, "Error")
         }
     }
-    
-    private static let isoDateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
     
     private func withCommand(_ action: (WalkingPadCommand) -> Void) -> HttpResponse {
         guard let command = self.walkingPadService.command() else {
