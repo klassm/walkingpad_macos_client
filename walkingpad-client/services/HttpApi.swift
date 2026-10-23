@@ -231,16 +231,12 @@ final class HttpApi {
     }
     
     private func connectionState() -> HttpResponse {
-        let state: String
-        if !self.walkingPadService.isConnected() {
-            state = "disconnected"
-        } else if (self.walkingPadService.lastStatus()?.speed ?? 0) > 0 {
-            state = "running"
-        } else {
-            state = "idle"
-        }
+        let state = TreadmillConnectionState(
+            isConnected: self.walkingPadService.isConnected(),
+            speed: self.walkingPadService.lastStatus()?.speed ?? 0
+        )
         do {
-            return .json(200, "OK", try JSONEncoder().encode(ConnectionState(state: state)))
+            return .json(200, "OK", try JSONEncoder().encode(ConnectionState(state: state.rawValue)))
         } catch {
             Self.logger.error("Failed to encode connection state: \(String(describing: error), privacy: .public)")
             return .empty(500, "Error")

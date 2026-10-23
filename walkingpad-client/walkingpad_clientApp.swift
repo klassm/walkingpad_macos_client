@@ -34,7 +34,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
-            self.mqttService.publish(oldState: oldState, newState: newState, workoutState: self.workout.workoutState())
+            self.mqttService.publish(
+                oldState: oldState,
+                newState: newState,
+                workoutState: self.workout.workoutState(),
+                connectionState: TreadmillConnectionState(
+                    isConnected: self.walkingPadService.isConnected(),
+                    speed: newState.speed
+                )
+            )
             DispatchQueue.main.async {
                 self.updateStatusBarIcon(connected: self.walkingPadService.isConnected(), speed: newState.speed)
                 if newState.speed > 0 {

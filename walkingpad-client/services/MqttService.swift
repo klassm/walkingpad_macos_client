@@ -15,6 +15,7 @@ struct MqttData: Codable {
     var stepsTotal: Int
     var distanceTotal: Int
     var speedKmh: Double
+    var state: TreadmillConnectionState
 }
 
 class MqttService {
@@ -101,7 +102,7 @@ class MqttService {
         return passedSeconds > 30
     }
     
-    public func publish(oldState: DeviceState?, newState: DeviceState, workoutState: WorkoutState) {
+    public func publish(oldState: DeviceState?, newState: DeviceState, workoutState: WorkoutState, connectionState: TreadmillConnectionState) {
         guard let client = self.client else { return }
         if (!shouldSend(oldState: oldState, newState: newState)) {
             return
@@ -112,7 +113,8 @@ class MqttService {
                 stepsWalkingpad: newState.steps,
                 stepsTotal: workoutState.steps,
                 distanceTotal: workoutState.distance,
-                speedKmh: newState.speedKmh()
+                speedKmh: newState.speedKmh(),
+                state: connectionState
             ))
             
             let jsonString = String(data: jsonData, encoding: .utf8) ?? ""

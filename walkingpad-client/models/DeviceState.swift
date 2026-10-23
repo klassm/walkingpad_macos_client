@@ -23,3 +23,19 @@ public struct DeviceState {
         return Double(speed) / 10
     }
 }
+
+// The treadmill's coarse availability state, shared by the HTTP API
+// (/treadmill/connection) and MQTT so both report the same semantics.
+public enum TreadmillConnectionState: String, Codable {
+    case disconnected, idle, running
+    
+    init(isConnected: Bool, speed: Int) {
+        if !isConnected {
+            self = .disconnected
+        } else if speed > 0 {
+            self = .running
+        } else {
+            self = .idle
+        }
+    }
+}
