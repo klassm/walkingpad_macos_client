@@ -15,11 +15,6 @@ class FileSystem {
         let path = self.getDirectory().appendingPathComponent(filename)
         Self.logger.info("saving to \(path.path, privacy: .public)")
         do {
-            let backupPath = path.deletingPathExtension().appendingPathExtension("\(path.pathExtension).bak")
-            if FileManager.default.fileExists(atPath: path.path) {
-                try FileManager.default.removeItem(at: backupPath)
-                try FileManager.default.copyItem(at: path, to: backupPath)
-            }
             try data.write(to: path, options: .atomic)
         } catch {
             Self.logger.error("Failed to write to \(path.path, privacy: .public): \(String(describing: error), privacy: .public)")
