@@ -26,11 +26,24 @@ struct HttpResponse {
     let body: Data
 
     static func json(_ status: Int, _ reason: String, _ data: Data) -> HttpResponse {
-        HttpResponse(status: status, reason: reason, headers: [("content-type", "application/json"), ("access-control-allow-origin", "*")], body: data)
+        HttpResponse(status: status, reason: reason, headers: Self.corsHeaders + [("content-type", "application/json")], body: data)
     }
 
     static func empty(_ status: Int, _ reason: String) -> HttpResponse {
         HttpResponse(status: status, reason: reason, headers: [], body: Data())
+    }
+
+    /// CORS plus the Chrome "Local Network Access" opt-in: without the
+    /// private-network preflight answer, browsers block requests to 127.0.0.1
+    /// from public sites (e.g. the hosted dashboard).
+    static let corsHeaders: [(String, String)] = [
+        ("access-control-allow-origin", "*"),
+        ("access-control-allow-methods", "GET, POST, OPTIONS"),
+        ("access-control-allow-private-network", "true"),
+    ]
+
+    static func preflight() -> HttpResponse {
+        HttpResponse(status: 204, reason: "No content", headers: corsHeaders, body: Data())
     }
 
     func serialized() -> Data {
@@ -270,6 +283,11 @@ final class HttpApi {
     }
 
     func handle(method: String, path: String) -> HttpResponse {
+        // Browser CORS/private-network preflight: answer for every path so a
+        // hosted dashboard can talk to this loopback server at all.
+        if method == "OPTIONS" {
+            return .preflight()
+        }
         switch (method, path) {
         case ("GET", "/treadmill"):
             return self.treadmillState()

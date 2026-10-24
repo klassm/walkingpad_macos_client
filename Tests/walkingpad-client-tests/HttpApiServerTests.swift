@@ -83,6 +83,15 @@ final class HttpApiServerTests: XCTestCase {
         XCTAssertTrue(body.contains("\"steps\":10"), body)
     }
 
+    func testOptionsPreflightAllowsPrivateNetworkAccess() {
+        let response = makeApi().handle(method: "OPTIONS", path: "/treadmill/workouts")
+        XCTAssertEqual(response.status, 204)
+        let serialized = String(data: response.serialized(), encoding: .utf8) ?? ""
+        XCTAssertTrue(serialized.contains("access-control-allow-origin: *"), serialized)
+        XCTAssertTrue(serialized.contains("access-control-allow-private-network: true"), serialized)
+        XCTAssertTrue(serialized.contains("access-control-allow-methods"), serialized)
+    }
+
     func testStartWithoutCommandReturns428() {
         treadmill.commandToReturn = nil
         let response = makeApi().handle(method: "POST", path: "/treadmill/start")
