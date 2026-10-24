@@ -229,6 +229,13 @@ enum WsServerFailure: Error {
     case posix(String, Int32)
 }
 
+/// Outcome of the upgrade handshake on a client socket.
+private enum HandshakeOutcome {
+    case upgraded(leftover: Data)
+    case preflight
+    case failed
+}
+
 /// One accepted (and optionally upgraded) WebSocket connection on a raw file descriptor.
 final class WsSocketConnection {
     let fd: Int32
@@ -254,7 +261,17 @@ final class WsSocketConnection {
         // pin this thread forever.
         Self.setSocketTimeouts(fd: fd, seconds: 5)
 
-        guard let leftover = performHandshake() else {
+        // Chrome 147+ probes the port with an OPTIONS preflight before the
+        // real upgrade (Local Network Access); answer it and close cleanly.
+        let outcome = performHandshake()
+        let leftover: Data
+        switch outcome {
+        case let .upgraded(bytes):
+            leftover = bytes
+        case .preflight:
+            disconnect()
+            return
+        case .failed:
             NSLog("WebSocketApi: handshake failed (fd %d)", fd)
             disconnect()
             return
@@ -387,32 +404,39 @@ final class WsSocketConnection {
         return true
     }
 
-    /// Performs the RFC 6455 upgrade; returns any frame bytes the client sent
-    /// behind the request head. nil on failure (connection must be closed).
-    private func performHandshake() -> Data? {
+    /// Performs the RFC 6455 upgrade; returns the frame bytes the client sent
+    /// behind the request head. `.preflight` when an OPTIONS probe was answered
+    /// (connection must be closed), `.failed` when the request is invalid.
+    private func performHandshake() -> HandshakeOutcome {
         var buffer = [UInt8](repeating: 0, count: 4096)
         var request = Data()
         while true {
             let received = recv(fd, &buffer, buffer.count, 0)
             if received < 0 {
                 if errno == EINTR { continue }
-                return nil
+                return .failed
             }
-            if received == 0 { return nil }
+            if received == 0 { return .failed }
             request += Data(buffer[0..<received])
             if let headEnd = request.range(of: Data("\r\n\r\n".utf8)) {
                 let leftover = request[headEnd.upperBound...]
                 let head = request[request.startIndex..<headEnd.upperBound]
-                guard
-                    let text = String(data: head, encoding: .utf8),
-                    let parsed = WsHandshake.parse(text)
-                else { return nil }
+                guard let text = String(data: head, encoding: .utf8) else { return .failed }
+                if text.hasPrefix("OPTIONS ") {
+                    Self.writeAll(fd: fd, data: Data(WsHandshake.preflightResponse().utf8))
+                    return .preflight
+                }
+                guard let parsed = WsHandshake.parse(text) else {
+                    let requestLine = text.components(separatedBy: "\r\n").first ?? "?"
+                    NSLog("WebSocketApi: rejected handshake request: %@", requestLine)
+                    return .failed
+                }
                 let acceptKey = WsHandshake.acceptKey(forKey: parsed.key)
                 let response = WsHandshake.response(acceptKey: acceptKey)
-                guard Self.writeAll(fd: fd, data: Data(response.utf8)) else { return nil }
-                return Data(leftover)
+                guard Self.writeAll(fd: fd, data: Data(response.utf8)) else { return .failed }
+                return .upgraded(leftover: Data(leftover))
             }
-            if request.count > 64 * 1024 { return nil }
+            if request.count > 64 * 1024 { return .failed }
         }
     }
 

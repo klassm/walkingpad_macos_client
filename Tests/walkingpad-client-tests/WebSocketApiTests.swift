@@ -314,4 +314,72 @@ final class WebSocketApiTests: XCTestCase {
         let messages = client.drain(count: 1)
         XCTAssertEqual(messages.first, "{\"state\":\"idle\",\"type\":\"connection\"}")
     }
+
+    // MARK: - CORS private-network preflight (Chrome 147+ LNA for WebSockets)
+
+    /// Chrome 147+ gates WebSocket connections behind Local Network Access and
+    /// probes the port with an OPTIONS preflight first. The server must answer
+    /// it (204 + CORS + private-network header) instead of failing the upgrade.
+    func testAnswersCorsPreflightOnWebSocketPort() {
+        guard let (api, _) = makeServer(connectionState: { "idle" }) else { return }
+        guard let port = api.boundPort() else { return }
+        let client = TestRawHttpClient()
+        let response = client.roundTrip(
+            port: port,
+            request: "OPTIONS /ws HTTP/1.1\r\n" +
+                "Host: 127.0.0.1:\(port)\r\n" +
+                "Origin: https://walkingpad-stats.netlify.app\r\n" +
+                "Access-Control-Request-Method: GET\r\n" +
+                "Access-Control-Request-Private-Network: true\r\n" +
+                "\r\n"
+        )
+        guard let response else {
+            XCTFail("No response to OPTIONS preflight")
+            return
+        }
+        XCTAssertTrue(response.contains("204"), "expected 204, got: \(response)")
+        XCTAssertTrue(response.contains("access-control-allow-private-network: true"), "missing private-network header: \(response)")
+        XCTAssertTrue(response.contains("access-control-allow-origin: *"), "missing CORS origin header: \(response)")
+        // The server must still serve WebSocket upgrades afterwards.
+        let ws = TestWsClient()
+        self.client = ws
+        ws.connect(port: port)
+        let messages = ws.drain(count: 1)
+        XCTAssertEqual(messages.first, "{\"state\":\"idle\",\"type\":\"connection\"}")
+    }
+}
+
+/// Minimal raw TCP client for non-WebSocket HTTP probes (preflight tests).
+final class TestRawHttpClient {
+    /// Sends `request` verbatim to 127.0.0.1:port; returns the response text
+    /// (headers + body) the server sends back before closing, or nil.
+    func roundTrip(port: UInt16, request: String, timeout: TimeInterval = 5) -> String? {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        guard fd >= 0 else { return nil }
+        defer { close(fd) }
+        var addr = sockaddr_in()
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = port.bigEndian
+        addr.sin_addr = in_addr(s_addr: INADDR_LOOPBACK.bigEndian)
+        let connected = withUnsafePointer(to: &addr) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                connect(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        guard connected == 0 else { return nil }
+        let data = Data(request.utf8)
+        let sent = data.withUnsafeBytes { pointer -> Bool in
+            pointer.baseAddress.map { send(fd, $0, data.count, 0) >= 0 } ?? false
+        }
+        guard sent else { return nil }
+        var received = Data()
+        var buffer = [UInt8](repeating: 0, count: 4096)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            let n = recv(fd, &buffer, buffer.count, 0)
+            if n <= 0 { break }
+            received += buffer[0..<n]
+        }
+        return String(data: received, encoding: .utf8)
+    }
 }

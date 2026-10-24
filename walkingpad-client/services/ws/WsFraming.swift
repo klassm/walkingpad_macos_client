@@ -67,6 +67,17 @@ public struct WsHandshake {
             "Sec-WebSocket-Accept: \(acceptKey)\r\n" +
             "\r\n"
     }
+
+    /// CORS preflight answer for the WebSocket port: Chrome 147+ probes
+    /// loopback WebSocket targets with an OPTIONS request (Local Network
+    /// Access) before allowing the upgrade from a public https page.
+    public static func preflightResponse() -> String {
+        "HTTP/1.1 204 No Content\r\n" +
+            "access-control-allow-origin: *\r\n" +
+            "access-control-allow-methods: GET, POST, OPTIONS\r\n" +
+            "access-control-allow-private-network: true\r\n" +
+            "\r\n"
+    }
 }
 
 public enum WsOpcode: UInt8 {
