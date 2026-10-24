@@ -60,7 +60,9 @@ class Workout: ObservableObject {
         }
         let speedChanged = oldState != nil && oldState?.speed != newState.speed
         
-        NSLog("adding steps=%d distance=%d", stepDiff, distanceDiff)
+        if (stepDiff != 0 || distanceDiff != 0) {
+            NSLog("adding steps=%d distance=%d", stepDiff, distanceDiff)
+        }
         
         if (self.steps > 0 && newState.statusType == .currentStatus) {
             let change = Change(
