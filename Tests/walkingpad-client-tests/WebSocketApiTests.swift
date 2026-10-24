@@ -273,18 +273,19 @@ final class WebSocketApiTests: XCTestCase {
         XCTAssertEqual(back.first, "{\"state\":\"idle\",\"type\":\"connection\"}")
     }
 
-    func testBroadcastWorkoutThrottlesWithinThirtySeconds() {
+    func testBroadcastWorkoutEmitsOnlyOnNewerSave() {
         guard let (api, _) = makeServer(connectionState: { "idle" }) else { return }
         let client = TestWsClient()
         self.client = client
         client.connect(port: api.boundPort()!)
         _ = client.drain(count: 1)
-        let first = Date()
-        let later1 = first.addingTimeInterval(15)
-        let later2 = first.addingTimeInterval(31.5)
-        api.broadcastWorkout(event: .workout(steps: 1, distance: 2, walkingSeconds: 3), now: first) // first: emitted
-        api.broadcastWorkout(event: .workout(steps: 4, distance: 5, walkingSeconds: 6), now: later1) // inside window: suppressed
-        api.broadcastWorkout(event: .workout(steps: 7, distance: 8, walkingSeconds: 9), now: later2) // outside window: emitted
+        let firstSave = Date()
+        api.broadcastWorkout(event: .workout(steps: 1, distance: 2, walkingSeconds: 3), lastSaveTime: nil) // no save yet: suppressed
+        api.broadcastWorkout(event: .workout(steps: 1, distance: 2, walkingSeconds: 3), lastSaveTime: .distantPast) // no real save yet: suppressed
+        api.broadcastWorkout(event: .workout(steps: 1, distance: 2, walkingSeconds: 3), lastSaveTime: firstSave) // first save: emitted
+        api.broadcastWorkout(event: .workout(steps: 4, distance: 5, walkingSeconds: 6), lastSaveTime: firstSave) // same save: suppressed
+        let stopSave = firstSave.addingTimeInterval(5) // the stop-save seconds later — must NOT be swallowed
+        api.broadcastWorkout(event: .workout(steps: 7, distance: 8, walkingSeconds: 9), lastSaveTime: stopSave)
         let messages = client.drain(count: 2)
         XCTAssertEqual(messages.count, 2)
         XCTAssertEqual(messages.last, "{\"distance\":8,\"steps\":7,\"type\":\"workout\",\"walkingSeconds\":9}")

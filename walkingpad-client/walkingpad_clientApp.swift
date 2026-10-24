@@ -49,11 +49,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 walkingSeconds: self.workout.walkingSeconds,
                 walkingMode: WsWalkingMode(newState.walkingMode)
             ))
-            self.webSocketApi?.broadcastWorkout(event: .workout(
-                steps: self.workout.steps,
-                distance: self.workout.distance,
-                walkingSeconds: self.workout.walkingSeconds
-            ))
+            self.webSocketApi?.broadcastWorkout(
+                event: .workout(
+                    steps: self.workout.steps,
+                    distance: self.workout.distance,
+                    walkingSeconds: self.workout.walkingSeconds
+                ),
+                lastSaveTime: self.workout.lastSaveTime
+            )
 
             self.mqttService.publish(
                 oldState: oldState,

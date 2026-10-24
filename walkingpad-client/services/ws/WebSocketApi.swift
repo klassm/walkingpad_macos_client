@@ -36,7 +36,7 @@ public final class WebSocketApi {
     private let executor: WsCommandExecuting
     private let connectionState: () -> String
     private let connectionTracker = WsConnectionTracker()
-    private let workoutThrottle = WsWorkoutThrottle()
+    private let saveTracker = WsSaveTracker()
 
     private var listenFD: Int32 = -1
     private var boundPortStorage: UInt16?
@@ -133,9 +133,11 @@ public final class WebSocketApi {
         broadcast(.connection(state: state))
     }
 
-    /// Workout totals are throttled to one emission per 30 s (MQTT heartbeat parity).
-    public func broadcastWorkout(event: WsEvent, now: Date = Date()) {
-        guard workoutThrottle.shouldEmitWorkout(now: now) else { return }
+    /// Workout totals are pushed whenever a new save happened (the last save
+    /// before the treadmill turns off must never be swallowed).
+    public func broadcastWorkout(event: WsEvent, lastSaveTime: Date?) {
+        guard let lastSaveTime, lastSaveTime != .distantPast,
+              saveTracker.shouldEmitWorkout(lastSaveTime: lastSaveTime) else { return }
         broadcast(event)
     }
 

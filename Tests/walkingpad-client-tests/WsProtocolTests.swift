@@ -154,16 +154,12 @@ final class WsProtocolTests: XCTestCase {
 
     // MARK: - Event throttling helpers
 
-    func testWorkoutThrottleFirstEventIsSent() {
-        let throttle = WsWorkoutThrottle()
-        XCTAssertTrue(throttle.shouldEmitWorkout(now: Date(timeIntervalSince1970: 100)))
-    }
-
-    func testWorkoutThrottleSuppressesInsideWindow() {
-        let throttle = WsWorkoutThrottle()
-        XCTAssertTrue(throttle.shouldEmitWorkout(now: Date(timeIntervalSince1970: 100)))
-        XCTAssertFalse(throttle.shouldEmitWorkout(now: Date(timeIntervalSince1970: 115)), "inside 30 s window must stay silent")
-        XCTAssertTrue(throttle.shouldEmitWorkout(now: Date(timeIntervalSince1970: 131)), "outside 30 s window must emit")
+    func testSaveTrackerEmitsOnlyOnNewerSave() {
+        let tracker = WsSaveTracker()
+        XCTAssertTrue(tracker.shouldEmitWorkout(lastSaveTime: Date(timeIntervalSince1970: 100)), "first save must emit")
+        XCTAssertFalse(tracker.shouldEmitWorkout(lastSaveTime: Date(timeIntervalSince1970: 100)), "same save must not re-emit")
+        XCTAssertFalse(tracker.shouldEmitWorkout(lastSaveTime: Date(timeIntervalSince1970: 90)), "older save must not emit")
+        XCTAssertTrue(tracker.shouldEmitWorkout(lastSaveTime: Date(timeIntervalSince1970: 105)), "newer save emits immediately — no 30 s suppression of the stop-save")
     }
 
     func testConnectionTrackerEmitsOnChangeOnly() {

@@ -21,7 +21,7 @@ class Workout: ObservableObject {
     
     public var lastUpdateTime: Date = Date()
     
-    private var lastSaveTime: Date = .distantPast
+    var lastSaveTime: Date = .distantPast
     
     public var onChangeCallback: OnChangeCallback =  {_ in }
     

@@ -171,22 +171,24 @@ public enum WsEventEncoding {
     }
 }
 
-/// Caps workout-total emissions at one every 30 s (mirrors the MQTT heartbeat
-/// policy in MqttService.shouldSend()). Thread-safe: broadcasts may originate
-/// from different queues.
-public final class WsWorkoutThrottle {
+/// Emits only when a *new* workout save happened — emission is driven by the
+/// save itself, never by a wall clock. Crucially, the stop-save (speed → 0)
+/// is always pushed, even seconds after a previous emission; afterwards no
+/// more BLE frames arrive, so a swallowed save would never be re-announced.
+/// Thread-safe: broadcasts may originate from different queues.
+public final class WsSaveTracker {
     private let lock = NSLock()
-    private var lastEmit: Date?
+    private var lastEmittedSave: Date?
 
     public init() {}
 
-    public func shouldEmitWorkout(now: Date) -> Bool {
+    public func shouldEmitWorkout(lastSaveTime: Date) -> Bool {
         lock.lock()
         defer { lock.unlock() }
-        if let lastEmit, now.timeIntervalSince(lastEmit) <= 30 {
+        if let lastEmittedSave, lastSaveTime <= lastEmittedSave {
             return false
         }
-        lastEmit = now
+        lastEmittedSave = lastSaveTime
         return true
     }
 }
