@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var updateTimer: RepeatingTimer? = nil;
     private var mqttService: MqttService
     private var httpApi: HttpApi?
+    private var webSocketApi: WebSocketApi?
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
@@ -34,6 +35,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.walkingPadService.callback = { oldState, newState in
             self.workout.update(oldState, newState)
+
+            // WebSocketApi self-gates: connection changes are deduplicated,
+            // workout totals are throttled to one per 30 s (see WsProtocol).
+            self.webSocketApi?.broadcastConnection(state: TreadmillConnectionState(
+                isConnected: self.walkingPadService.isConnected(),
+                speed: newState.speed
+            ).rawValue)
+            self.webSocketApi?.broadcast(.treadmill(
+                speed: newState.speedKmh(),
+                steps: self.workout.steps,
+                distance: self.workout.distance,
+                walkingSeconds: self.workout.walkingSeconds,
+                walkingMode: WsWalkingMode(newState.walkingMode)
+            ))
+            self.webSocketApi?.broadcastWorkout(event: .workout(
+                steps: self.workout.steps,
+                distance: self.workout.distance,
+                walkingSeconds: self.workout.walkingSeconds
+            ))
+
             self.mqttService.publish(
                 oldState: oldState,
                 newState: newState,
@@ -121,6 +142,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.global(qos: .userInitiated).async {
             self.httpApi = startHttpServer(walkingPadService: self.walkingPadService, workout: self.workout)
         }
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.startWebSocketServer()
+        }
         
         let contentView = ContentView()
             .environmentObject(workout)
@@ -162,6 +186,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.walkingPadService.command()?.updateStatus()
     }
     
+    /// Loopback-only WebSocket server (design: websocket.html §5). Binds 127.0.0.1:4935,
+    /// pushes treadmill/workout/connection events and accepts commands. Started like the
+    /// HTTP API; broadcasts are safe from any thread (internally lock-guarded).
+    private func startWebSocketServer() {
+        let executor = WsTreadmillExecutor(
+            treadmill: self.walkingPadService,
+            snapshotProvider: { [weak self] in
+                guard let self else { return [] }
+                // Snapshot commands are rare; build the formatter per call so
+                // it is never shared across threads (DateFormatter is not
+                // thread-safe).
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                return self.workout.loadAll().map { entry in
+                    WsWorkoutData(
+                        date: dateFormatter.string(from: entry.date),
+                        steps: entry.steps,
+                        distance: entry.distance,
+                        walkingSeconds: entry.walkingSeconds
+                    )
+                }
+            }
+        )
+        let api = WebSocketApi(
+            executor: executor,
+            connectionState: { [weak self] in
+                guard let self else { return TreadmillConnectionState.disconnected.rawValue }
+                return TreadmillConnectionState(
+                    isConnected: self.walkingPadService.isConnected(),
+                    speed: self.walkingPadService.lastStatus()?.speed ?? 0
+                ).rawValue
+            },
+            port: WebSocketApi.defaultPort
+        )
+        do {
+            try api.start()
+            // Broadcasts read this from the BLE callback queue; publish the
+            // instance only once fully started and via the main queue so both
+            // sides agree on the same serialization domain.
+            DispatchQueue.main.async {
+                self.webSocketApi = api
+            }
+        } catch {
+            NSLog("Failed to start WebSocket server: \(error)")
+        }
+    }
+
     private func updateStatusBarIcon(connected: Bool, speed: Int) {
         let iconName: String
         

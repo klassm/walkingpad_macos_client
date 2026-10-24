@@ -1,5 +1,4 @@
 import Foundation
-import Network
 import os
 
 struct WorkoutApiData: Codable {
@@ -46,106 +45,201 @@ struct HttpResponse {
     }
 }
 
-private struct ParsedHttpRequest {
+struct ParsedHttpRequest {
     let method: String
     let path: String
     let totalLength: Int
 }
 
-// Small JSON API on port 4934, backed by Network.framework (replaces Embassy).
+protocol HttpTreadmillProviding {
+    func command() -> WalkingPadCommanding?
+    func lastStatus() -> DeviceState?
+    func isConnected() -> Bool
+}
+
+extension WalkingPadService: HttpTreadmillProviding {}
+
+protocol HttpWorkoutProviding {
+    var steps: Int { get }
+    var distance: Int { get }
+    var walkingSeconds: Int { get }
+    func loadAll() -> [WorkoutSaveData]
+}
+
+extension Workout: HttpWorkoutProviding {}
+
+// Small JSON API on 127.0.0.1:4934. BSD-sockets transport, the same proven
+// pattern as WebSocketApi: NWListener never became ready inside the App
+// Sandbox (connection refused on 4934 — observed on the host, unfixable via
+// parameters), while raw POSIX sockets work reliably. Loopback-only is
+// guaranteed at bind time: bind(INADDR_LOOPBACK), never INADDR_ANY.
 final class HttpApi {
     private static let logger = Logger(subsystem: "klassm.walkingpad-client", category: "http")
-    private static let port: NWEndpoint.Port = 4934
-    
-    private let walkingPadService: WalkingPadService
-    private let workout: Workout
-    private let listener: NWListener
-    private let dateFormatter: DateFormatter
-    
-    init(walkingPadService: WalkingPadService, workout: Workout) throws {
-        self.walkingPadService = walkingPadService
+    static let defaultPort: UInt16 = 4934
+
+    private let treadmill: HttpTreadmillProviding
+    private let workout: HttpWorkoutProviding
+    private let port: UInt16
+    private let lock = NSLock()
+    private var listenFD: Int32 = -1
+    private var boundPortStorage: UInt16?
+
+    init(treadmill: HttpTreadmillProviding, workout: HttpWorkoutProviding, port: UInt16 = HttpApi.defaultPort) {
+        self.treadmill = treadmill
         self.workout = workout
-        self.dateFormatter = DateFormatter()
-        self.dateFormatter.dateFormat = "yyyy-MM-dd"
-        
-        let parameters = NWParameters.tcp
-        parameters.allowLocalEndpointReuse = true
-        self.listener = try NWListener(using: parameters, on: Self.port)
+        self.port = port
     }
-    
+
+    func boundPort() -> UInt16? {
+        lock.lock()
+        defer { lock.unlock() }
+        return boundPortStorage
+    }
+
     func start() {
-        listener.newConnectionHandler = { [weak self] connection in
-            guard let self else { return }
-            connection.stateUpdateHandler = { state in
-                switch state {
-                case .ready:
-                    Self.logger.notice("HTTP connection ready")
-                case .waiting(let error):
-                    Self.logger.warning("HTTP connection waiting: \(String(describing: error), privacy: .public)")
-                case .failed(let error):
-                    Self.logger.error("HTTP connection failed: \(String(describing: error), privacy: .public)")
-                default:
-                    break
-                }
-            }
-            connection.start(queue: DispatchQueue(label: "walkingpad.http.connection", target: .global()))
-            self.receive(on: connection)
+        lock.lock()
+        defer { lock.unlock() }
+        guard listenFD == -1 else { return }
+
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        guard fd >= 0 else {
+            Self.logger.error("HTTP socket() failed, errno \(errno)")
+            return
         }
-        listener.stateUpdateHandler = { state in
-            switch state {
-            case .ready:
-                Self.logger.notice("HTTP server ready on port \(Self.port.rawValue)")
-            case .waiting(let error):
-                Self.logger.warning("HTTP server waiting: \(String(describing: error), privacy: .public)")
-            case .failed(let error):
-                Self.logger.error("HTTP server failed: \(String(describing: error), privacy: .public)")
-            default:
+        var reuse: Int32 = 1
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(MemoryLayout<Int32>.size))
+
+        var addr = sockaddr_in()
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = port.bigEndian
+        addr.sin_addr = in_addr(s_addr: INADDR_LOOPBACK.bigEndian)
+        let bindResult = withUnsafePointer(to: &addr) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sockaddrPointer in
+                bind(fd, sockaddrPointer, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        guard bindResult == 0 else {
+            Self.logger.error("HTTP bind to 127.0.0.1:\(self.port) failed, errno \(errno)")
+            close(fd)
+            return
+        }
+        guard listen(fd, 16) == 0 else {
+            Self.logger.error("HTTP listen failed, errno \(errno)")
+            close(fd)
+            return
+        }
+
+        var bound = sockaddr_in()
+        var boundLength = socklen_t(MemoryLayout<sockaddr_in>.size)
+        let nameResult = withUnsafeMutablePointer(to: &bound) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sockaddrPointer in
+                getsockname(fd, sockaddrPointer, &boundLength)
+            }
+        }
+        if nameResult == 0 {
+            self.boundPortStorage = UInt16(bigEndian: bound.sin_port)
+        }
+
+        listenFD = fd
+        Self.logger.notice("HTTP server listening on 127.0.0.1:\(self.boundPortStorage.map(String.init) ?? "?")")
+
+        Thread { [weak self] in
+            guard let self else {
+                close(fd)
+                return
+            }
+            self.acceptLoop(fd: fd)
+        }.start()
+    }
+
+    func stop() {
+        lock.lock()
+        let fd = listenFD
+        listenFD = -1
+        lock.unlock()
+        guard fd >= 0 else { return }
+        shutdown(fd, SHUT_RDWR)
+        close(fd)
+    }
+
+    private func acceptLoop(fd: Int32) {
+        while true {
+            var peer = sockaddr()
+            var peerLength = socklen_t(MemoryLayout<sockaddr>.size)
+            let clientFD = accept(fd, &peer, &peerLength)
+            if clientFD == -1 {
+                if errno == EINTR { continue }
+                if errno == EMFILE || errno == ENFILE || errno == ENOBUFS || errno == ENOMEM {
+                    usleep(100_000)
+                    continue
+                }
+                Self.logger.error("HTTP accept failed, errno \(errno) — listener stopped")
                 break
             }
-        }
-        listener.start(queue: DispatchQueue(label: "walkingpad.http.listener", target: .global()))
-    }
-    
-    func stop() {
-        listener.cancel()
-    }
-    
-    private func receive(on connection: NWConnection, buffer: Data = Data()) {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
-            if let error {
-                Self.logger.error("HTTP receive error: \(String(describing: error), privacy: .public)")
-            }
-            guard let self, error == nil else {
-                connection.cancel()
-                return
-            }
-            var buffer = buffer
-            if let data {
-                buffer.append(data)
-            }
-            guard let request = Self.parseRequest(from: buffer) else {
-                if isComplete || buffer.count > 1_000_000 {
-                    Self.logger.warning("HTTP incomplete request, closing connection")
-                    connection.cancel()
-                } else {
-                    self.receive(on: connection, buffer: buffer)
-                }
-                return
-            }
-            Self.logger.notice("HTTP request: \(request.method, privacy: .public) \(request.path, privacy: .public)")
-            let response = self.handle(method: request.method, path: request.path)
-            connection.send(content: response.serialized(), completion: .contentProcessed { sendError in
-                if let sendError {
-                    Self.logger.error("HTTP send error: \(String(describing: sendError), privacy: .public)")
-                } else {
-                    Self.logger.notice("HTTP response sent: \(response.status)")
-                }
-                connection.cancel()
-            })
+            Thread {
+                self.serveConnection(fd: clientFD)
+            }.start()
         }
     }
 
-    private static func parseRequest(from data: Data) -> ParsedHttpRequest? {
+    private func serveConnection(fd: Int32) {
+        setSocketTimeouts(fd: fd, seconds: 5)
+        defer { close(fd) }
+
+        var buffer = Data()
+        while true {
+            var chunk = [UInt8](repeating: 0, count: 8192)
+            let received = recv(fd, &chunk, chunk.count, 0)
+            if received == -1 {
+                if errno == EINTR { continue }
+                Self.logger.error("HTTP receive error, errno \(errno)")
+                return
+            }
+            guard received > 0 else { return } // EOF or recv timeout
+
+            buffer.append(contentsOf: chunk[0..<received])
+            guard let request = Self.parseRequest(from: buffer) else {
+                if buffer.count > 1_000_000 {
+                    Self.logger.warning("HTTP request exceeded 1 MB, closing connection")
+                    return
+                }
+                continue
+            }
+
+            Self.logger.notice("HTTP request: \(request.method, privacy: .public) \(request.path, privacy: .public)")
+            let response = self.handle(method: request.method, path: request.path)
+
+            let data = response.serialized()
+            var sent = 0
+            var writeFailed = false
+            data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
+                guard let base = raw.baseAddress else { return }
+                while sent < data.count {
+                    let written = write(fd, base.advanced(by: sent), data.count - sent)
+                    if written == -1 {
+                        if errno == EINTR { continue }
+                        writeFailed = true
+                        break
+                    }
+                    sent += written
+                }
+            }
+            if writeFailed {
+                Self.logger.error("HTTP send error, dropping connection")
+            } else {
+                Self.logger.notice("HTTP response sent: \(response.status)")
+            }
+            return // connection: close per request
+        }
+    }
+
+    private func setSocketTimeouts(fd: Int32, seconds: Int32) {
+        var timeout = timeval(tv_sec: Int(seconds), tv_usec: 0)
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, socklen_t(MemoryLayout<timeval>.size))
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, socklen_t(MemoryLayout<timeval>.size))
+    }
+
+    static func parseRequest(from data: Data) -> ParsedHttpRequest? {
         guard let headerEnd = data.range(of: Data("\r\n\r\n".utf8)) else {
             return nil
         }
@@ -174,8 +268,8 @@ final class HttpApi {
         }
         return ParsedHttpRequest(method: String(parts[0]), path: String(parts[1]), totalLength: totalLength)
     }
-    
-    private func handle(method: String, path: String) -> HttpResponse {
+
+    func handle(method: String, path: String) -> HttpResponse {
         switch (method, path) {
         case ("GET", "/treadmill"):
             return self.treadmillState()
@@ -189,16 +283,20 @@ final class HttpApi {
             return self.withCommand { $0.setSpeed(speed: 0) }
         case ("POST", "/treadmill/faster"):
             return self.withCommand { command in
-                if let speed = self.walkingPadService.lastStatus()?.speed {
-                    command.setSpeed(speed: UInt8(speed + 5))
+                if let speed = self.treadmill.lastStatus()?.speed {
+                    // Clamped like the WS executor (WebSocketApi) so the two
+                    // transports cannot drive the belt beyond 8.0 km/h.
+                    command.setSpeed(speed: UInt8(min(80, speed + 5)))
                 } else {
                     command.start()
                 }
             }
         case ("POST", "/treadmill/slower"):
             return self.withCommand { command in
-                if let speed = self.walkingPadService.lastStatus()?.speed {
-                    command.setSpeed(speed: UInt8(speed - 5))
+                if let speed = self.treadmill.lastStatus()?.speed {
+                    // Guarded like the WS executor: UInt8(speed - 5) would trap
+                    // for speed < 5.
+                    command.setSpeed(speed: speed > 5 ? UInt8(speed - 5) : 0)
                 } else {
                     command.setSpeed(speed: 0)
                 }
@@ -214,13 +312,13 @@ final class HttpApi {
             return .empty(404, "Not found")
         }
     }
-    
+
     private func treadmillState() -> HttpResponse {
         let state = TreadmillState(
             steps: self.workout.steps,
             distance: self.workout.distance,
             walkingSeconds: self.workout.walkingSeconds,
-            speed: self.walkingPadService.lastStatus()?.speedKmh() ?? 0
+            speed: self.treadmill.lastStatus()?.speedKmh() ?? 0
         )
         do {
             return .json(200, "OK", try JSONEncoder().encode(state))
@@ -229,11 +327,11 @@ final class HttpApi {
             return .empty(500, "Error")
         }
     }
-    
+
     private func connectionState() -> HttpResponse {
         let state = TreadmillConnectionState(
-            isConnected: self.walkingPadService.isConnected(),
-            speed: self.walkingPadService.lastStatus()?.speed ?? 0
+            isConnected: self.treadmill.isConnected(),
+            speed: self.treadmill.lastStatus()?.speed ?? 0
         )
         do {
             return .json(200, "OK", try JSONEncoder().encode(ConnectionState(state: state.rawValue)))
@@ -242,14 +340,18 @@ final class HttpApi {
             return .empty(500, "Error")
         }
     }
-    
+
     private func workouts() -> HttpResponse {
+        // Created per call: the response runs on per-connection threads and
+        // DateFormatter is not thread-safe.
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
         let workouts = self.workout.loadAll().map { entry in
             WorkoutApiData(
                 steps: entry.steps,
                 distance: entry.distance,
                 walkingSeconds: entry.walkingSeconds,
-                date: self.dateFormatter.string(from: entry.date)
+                date: formatter.string(from: entry.date)
             )
         }
         do {
@@ -259,9 +361,9 @@ final class HttpApi {
             return .empty(500, "Error")
         }
     }
-    
-    private func withCommand(_ action: (WalkingPadCommand) -> Void) -> HttpResponse {
-        guard let command = self.walkingPadService.command() else {
+
+    private func withCommand(_ action: (WalkingPadCommanding) -> Void) -> HttpResponse {
+        guard let command = self.treadmill.command() else {
             return .empty(428, "Treadmill not connected")
         }
         action(command)
@@ -271,12 +373,11 @@ final class HttpApi {
 
 @discardableResult
 func startHttpServer(walkingPadService: WalkingPadService, workout: Workout) -> HttpApi? {
-    do {
-        let server = try HttpApi(walkingPadService: walkingPadService, workout: workout)
-        server.start()
-        return server
-    } catch {
-        Logger(subsystem: "klassm.walkingpad-client", category: "http").error("Failed to start HTTP server: \(String(describing: error), privacy: .public)")
+    let server = HttpApi(treadmill: walkingPadService, workout: workout)
+    server.start()
+    guard server.boundPort() != nil else {
+        Logger(subsystem: "klassm.walkingpad-client", category: "http").error("Failed to start HTTP server on 127.0.0.1:\(HttpApi.defaultPort)")
         return nil
     }
+    return server
 }

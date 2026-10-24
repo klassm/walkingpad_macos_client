@@ -2,7 +2,14 @@ import Foundation
 import CoreBluetooth
 
 
-public class WalkingPadCommand {
+public protocol WalkingPadCommanding {
+    func start()
+    func setSpeed(speed: UInt8)
+    func setWalkingMode(mode: WalkingMode)
+    func updateStatus()
+}
+
+public class WalkingPadCommand: WalkingPadCommanding {
     private var connection: WalkingPadConnection
     
     init(_ connection: WalkingPadConnection) {

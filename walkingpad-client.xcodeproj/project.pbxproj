@@ -14,6 +14,10 @@
 		AA0000000000000000000035 /* FooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* FooterView.swift */; };
 		AA000000000000000000007C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007A /* SettingsView.swift */; };
 		AA000000000000000000007D /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007B /* HistoryView.swift */; };
+		AA000000000000000000007E /* WsProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007F /* WsProtocol.swift */; };
+		AA0000000000000000000080 /* WsFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000081 /* WsFraming.swift */; };
+		AA0000000000000000000082 /* WebSocketApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000083 /* WebSocketApi.swift */; };
+		AA0000000000000000000084 /* WsTreadmillExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000085 /* WsTreadmillExecutor.swift */; };
 		AA0000000000000000000038 /* RunningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000008 /* RunningView.swift */; };
 		AA0000000000000000000039 /* StoppedOrPauseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* StoppedOrPauseView.swift */; };
 		AA000000000000000000003A /* WaitingForTreadmillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* WaitingForTreadmillView.swift */; };
@@ -44,6 +48,10 @@
 		AA0000000000000000000005 /* FooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterView.swift; sourceTree = "<group>"; };
 		AA000000000000000000007A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA000000000000000000007B /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		AA000000000000000000007F /* WsProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WsProtocol.swift; sourceTree = "<group>"; };
+		AA0000000000000000000081 /* WsFraming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WsFraming.swift; sourceTree = "<group>"; };
+		AA0000000000000000000083 /* WebSocketApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketApi.swift; sourceTree = "<group>"; };
+		AA0000000000000000000085 /* WsTreadmillExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WsTreadmillExecutor.swift; sourceTree = "<group>"; };
 		AA0000000000000000000008 /* RunningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000009 /* StoppedOrPauseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoppedOrPauseView.swift; sourceTree = "<group>"; };
 		AA000000000000000000000A /* WaitingForTreadmillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForTreadmillView.swift; sourceTree = "<group>"; };
@@ -127,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000066 /* walkingPad */,
+				AA0000000000000000000086 /* ws */,
 				AA000000000000000000000F /* BluetoothDiscoveryService.swift */,
 				AA0000000000000000000010 /* BluetoothPeripheral.swift */,
 				AA0000000000000000000011 /* FileSystem.swift */,
@@ -145,6 +154,17 @@
 				AA000000000000000000001A /* WalkingPadCommand.swift */,
 			);
 			path = walkingPad;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000086 /* ws */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000007F /* WsProtocol.swift */,
+				AA0000000000000000000081 /* WsFraming.swift */,
+				AA0000000000000000000083 /* WebSocketApi.swift */,
+				AA0000000000000000000085 /* WsTreadmillExecutor.swift */,
+			);
+			path = ws;
 			sourceTree = "<group>";
 		};
 		AA0000000000000000000067 /* utils */ = {
@@ -270,6 +290,10 @@
 				AA0000000000000000000035 /* FooterView.swift in Sources */,
 				AA000000000000000000007C /* SettingsView.swift in Sources */,
 				AA000000000000000000007D /* HistoryView.swift in Sources */,
+				AA000000000000000000007E /* WsProtocol.swift in Sources */,
+				AA0000000000000000000080 /* WsFraming.swift in Sources */,
+				AA0000000000000000000082 /* WebSocketApi.swift in Sources */,
+				AA0000000000000000000084 /* WsTreadmillExecutor.swift in Sources */,
 				AA0000000000000000000038 /* RunningView.swift in Sources */,
 				AA0000000000000000000039 /* StoppedOrPauseView.swift in Sources */,
 				AA000000000000000000003A /* WaitingForTreadmillView.swift in Sources */,
