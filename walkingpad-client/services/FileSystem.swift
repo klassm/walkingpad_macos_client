@@ -1,6 +1,16 @@
 import Foundation
 import os
 
+/// Storage seam for Workout, following the same test-double pattern as
+/// HttpTreadmillProviding/WsCommandExecuting: tests run against an in-memory
+/// store instead of the app container's Autosave Information directory.
+public protocol WorkoutStoring {
+    func save(filename: String, data: Data)
+    func load(filename: String) -> Data?
+}
+
+extension FileSystem: WorkoutStoring {}
+
 class FileSystem {
     private static let logger = Logger(subsystem: "klassm.walkingpad-client", category: "filesystem")
 

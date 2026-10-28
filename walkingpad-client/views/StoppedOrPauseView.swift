@@ -11,6 +11,7 @@ struct StoppedOrPausedView: View {
             WorkoutStateView()
             HStack {
                 Button(action: {
+                    NSLog("Start button clicked")
                     self.walkingPadService.command()?.start()
                 }) {
                     Text("Start")

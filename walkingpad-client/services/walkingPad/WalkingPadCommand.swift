@@ -29,6 +29,11 @@ public class WalkingPadCommand: WalkingPadCommanding {
         let data = Data(withChecksum)
         
         let characteristic = self.connection.commandCharacteristic
+        NSLog("BLE command write: %d bytes to %@ (withoutResponse)", data.count, characteristic.uuid.uuidString)
+        // The treadmill advertises the .write property on FE02, but its ATT
+        // permission table only accepts write-without-response (Write
+        // Command): a .withResponse Write Request is rejected with ATT error
+        // 0x03 "Writing is not permitted". Verified 2026-10-27 on KS-HCR1AA.
         self.connection.peripheral.writeValue(data, for: characteristic, type: .withoutResponse)
     }
     

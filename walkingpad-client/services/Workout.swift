@@ -10,6 +10,8 @@ struct WorkoutState {
 }
 
 class Workout: ObservableObject {
+    private let storage: WorkoutStoring
+
     @Published
     public var steps: Int = 0
     
@@ -25,7 +27,8 @@ class Workout: ObservableObject {
     
     public var onChangeCallback: OnChangeCallback =  {_ in }
     
-    init() {
+    init(storage: WorkoutStoring = FileSystem()) {
+        self.storage = storage
         self.load()
     }
     
@@ -50,8 +53,18 @@ class Workout: ObservableObject {
 
         // A walk that ends by disconnecting (speed drops to 0, device counters
         // reset) produces a negative stepDiff and would otherwise be skipped
-        // by the guard below without ever being persisted.
-        if self.steps > 0, oldState?.speed != newState.speed, newState.speed == 0 {
+        // by the guard below without ever being persisted. Count the diffs
+        // that arrived with this final status first, then persist.
+        // Requires a real previous status: with oldState == nil the device
+        // counter is unknown history (and may still hold the steps the app
+        // just restored from disk), so its absolute value must never be added.
+        if self.steps > 0, let oldState, oldState.speed != newState.speed, newState.speed == 0 {
+            if stepDiff > 0 { self.steps += stepDiff }
+            if distanceDiff > 0 { self.distance += distanceDiff }
+            if walkingTimeDiff > 0 { self.walkingSeconds += walkingTimeDiff }
+            if stepDiff > 0 || distanceDiff > 0 || walkingTimeDiff > 0 {
+                self.lastUpdateTime = newState.time
+            }
             save()
             return
         }
@@ -93,20 +106,38 @@ class Workout: ObservableObject {
     public func save() {
         self.lastSaveTime = Date()
         let workoutData = WorkoutSaveData(steps: self.steps, distance: self.distance, walkingSeconds: self.walkingSeconds, date: self.lastUpdateTime)
-        // Drop pointless zero-step entries (legacy files contain zero-shadow
-        // entries that overwrite real walks downstream).
-        let withoutToday = loadAll().filter { $0.steps > 0 && !Calendar.current.isDateInToday($0.date)}
-        // Never regress today's numbers: keep whichever of the in-memory state and
-        // the best already-persisted entry for today is higher (guards against
-        // zero-shadow saves after reconnects/restarts).
-        let bestToday = loadAll().filter { Calendar.current.isDateInToday($0.date) }.max { $0.steps < $1.steps }
-        let entryToStore = bestToday != nil && bestToday!.steps > workoutData.steps ? bestToday! : workoutData
-        let newData = withoutToday + [entryToStore];
-        
+
+        // One entry per calendar day. Every entry is a cumulative snapshot of
+        // that day's counters, so the highest-steps entry of a day is its
+        // final total. Collapsing every day (not just the current one) also
+        // rewrites stale duplicate pairs from older versions: the midnight
+        // rollover used to append an identical twin of the day's last save
+        // because the old dedup only applied to "today". Zero-step legacy
+        // entries are dropped.
+        var bestPerDay: [Date: WorkoutSaveData] = [:]
+        for entry in loadAll() where entry.steps > 0 {
+            let day = Calendar.current.startOfDay(for: entry.date)
+            if let existing = bestPerDay[day], existing.steps >= entry.steps {
+                continue
+            }
+            bestPerDay[day] = entry
+        }
+        // Never regress the numbers: keep whichever of the in-memory state
+        // and the best already-persisted entry for the same day is higher.
+        if self.steps > 0 {
+            let day = Calendar.current.startOfDay(for: workoutData.date)
+            if let existing = bestPerDay[day], existing.steps > workoutData.steps {
+                // keep the persisted one
+            } else {
+                bestPerDay[day] = workoutData
+            }
+        }
+        let newData = bestPerDay.values.sorted { $0.date > $1.date }
+
         let jsonEncoder = JSONEncoder()
         do {
             let json = try jsonEncoder.encode(WorkoutsSaveData(workouts: newData))
-            FileSystem().save(filename: "workouts.json", data: json)
+            storage.save(filename: "workouts.json", data: json)
         } catch {
             NSLog("could not save workouts.json: %@", String(describing: error))
         }
@@ -132,7 +163,7 @@ class Workout: ObservableObject {
     public func loadAll() -> [WorkoutSaveData] {
         let jsonDecoder = JSONDecoder()
         do {
-            let optionalData = FileSystem().load(filename: "workouts.json")
+            let optionalData = storage.load(filename: "workouts.json")
             if let data = optionalData {
                 return try decodeWorkouts(data, decoder: jsonDecoder).suffix(500)
             }

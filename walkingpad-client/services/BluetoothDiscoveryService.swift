@@ -12,6 +12,9 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
     private let maxReconnectAttempts = 5
     private var scanTimeoutTimer: Timer? = nil
     private let scanTimeoutInterval: TimeInterval = 30
+    private var reconnectFallbackTimer: Timer? = nil
+    private let reconnectFallbackInterval: TimeInterval = 30
+    private var fallbackScanActive = false
     private let lastConnectedPeripheralKey = "lastConnectedPeripheralUUID"
 
     init(_ walkingPadService: WalkingPadService) {
@@ -35,6 +38,7 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
 
     private func cleanup() {
         cancelScanTimeout()
+        cancelReconnectFallback()
         centralManager?.stopScan()
         bluetoothPeripheral = nil
     }
@@ -44,6 +48,7 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
 
         if let peripheral = walkingPadService.connectedPeripheral(), peripheral.state != .connected {
             NSLog("Reconnecting to known peripheral: %@", peripheral.identifier.uuidString)
+            armReconnectFallback()
             centralManager.connect(peripheral, options: nil)
             return
         }
@@ -54,16 +59,47 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
             if let peripheral = peripherals.first, peripheral.state != .connected {
                 NSLog("Reconnecting to persisted peripheral: %@", uuidString)
                 pendingReconnectPeripheral = peripheral
+                armReconnectFallback()
                 centralManager.connect(peripheral, options: nil)
                 return
             }
         }
     }
 
+    /// A connect() to a known-but-unavailable peripheral stays pending
+    /// indefinitely on macOS: no didConnect and no didFailToConnect, so the
+    /// attempt-counter based scan fallback in scheduleReconnectOrScan() is
+    /// unreachable. This timer guarantees the scan path (which provably
+    /// finds the treadmill at app start) runs if the reconnect stays silent.
+    private func armReconnectFallback() {
+        cancelReconnectFallback()
+        reconnectFallbackTimer = Timer.scheduledTimer(withTimeInterval: reconnectFallbackInterval, repeats: false) { [weak self] _ in
+            self?.handleReconnectFallbackTimeout()
+        }
+    }
+
+    private func cancelReconnectFallback() {
+        reconnectFallbackTimer?.invalidate()
+        reconnectFallbackTimer = nil
+    }
+
+    private func handleReconnectFallbackTimeout() {
+        reconnectFallbackTimer = nil
+        guard !isSleeping, walkingPadService.activeConnection == nil else { return }
+        NSLog("Reconnect fallback timed out after %.0fs, falling back to full scan", reconnectFallbackInterval)
+        fallbackScanActive = true
+        if let pending = pendingReconnectPeripheral {
+            pendingReconnectPeripheral = nil
+            centralManager.cancelPeripheralConnection(pending)
+        }
+        beginScan()
+    }
+
     func setSleeping(_ sleeping: Bool) {
         isSleeping = sleeping
         if sleeping {
             cancelScanTimeout()
+            cancelReconnectFallback()
             centralManager?.stopScan()
         }
     }
@@ -125,7 +161,10 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
     }
 
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        NSLog("Connected to peripheral: %@", peripheral.identifier.uuidString)
         pendingReconnectPeripheral = nil
+        cancelReconnectFallback()
+        fallbackScanActive = false
         resetReconnectAttempts()
         centralManager.stopScan()
         cancelScanTimeout()
@@ -143,6 +182,12 @@ final class BluetoothDiscoveryService: NSObject, @unchecked Sendable, CBCentralM
         NSLog("Failed to connect to peripheral: %@, error: %@", peripheral.identifier.uuidString, String(describing: error))
         pendingReconnectPeripheral = nil
         bluetoothPeripheral = nil
+        if fallbackScanActive {
+            // The failure is the cancelled pending reconnect from the
+            // fallback timeout; the fallback scan is already running.
+            fallbackScanActive = false
+            return
+        }
         if !isSleeping {
             scheduleReconnectOrScan()
         }
